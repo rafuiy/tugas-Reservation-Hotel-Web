@@ -4,7 +4,7 @@ Project ini adalah aplikasi reservasi hotel sederhana berbasis Go (Gin) dengan U
 
 ## Prasyarat
 - Go >= 1.22
-- Docker + Docker Compose (untuk Postgres)
+- Postgres lokal (tanpa Docker) atau Docker + Docker Compose
 
 ## Konfigurasi
 Salin `.env.example` menjadi `.env`, lalu sesuaikan nilainya.
@@ -17,14 +17,30 @@ ADMIN_SEED_EMAIL=admin@local.test
 ADMIN_SEED_PASSWORD=admin123
 ```
 
-## Menjalankan Database (Postgres)
+## Menjalankan Database (Tanpa Docker)
+
+Pastikan Postgres lokal berjalan dan `psql` tersedia di PATH.
+
+Buat database:
+
+```
+psql -U postgres -d postgres -c "CREATE DATABASE reservasi_hotel;"
+```
+
+Jalankan migrasi:
+
+```
+psql -U postgres -d reservasi_hotel -f migrations/001_init.sql
+```
+
+## Menjalankan Database (Docker)
 
 ```
 docker compose up -d
 ```
 
 ## Migrasi
-Migrasi dijalankan via `psql` di container database:
+Jika menggunakan Docker, migrasi dijalankan via `psql` di container database:
 
 ```
 docker compose exec db psql -U postgres -d reservasi_hotel -f /migrations/001_init.sql
@@ -35,6 +51,10 @@ docker compose exec db psql -U postgres -d reservasi_hotel -f /migrations/001_in
 ```
 go run cmd/seed/main.go
 ```
+
+Admin default (sesuai `.env`):
+- Email: `admin@local.test`
+- Password: `admin123`
 
 ## Menjalankan Server
 
