@@ -1,0 +1,35 @@
+package model
+
+import "time"
+
+type Booking struct {
+  ID             int64     `db:"id" json:"id"`
+  UserID         int64     `db:"user_id" json:"user_id"`
+  RoomID         int64     `db:"room_id" json:"room_id"`
+  AvailabilityID int64     `db:"availability_id" json:"availability_id"`
+  GuestName      string    `db:"guest_name" json:"guest_name"`
+  GuestPhone     string    `db:"guest_phone" json:"guest_phone"`
+  Notes          string    `db:"notes" json:"notes"`
+  Status         string    `db:"status" json:"status"`
+  CreatedAt      time.Time `db:"created_at" json:"created_at"`
+}
+
+type BookingView struct {
+  ID             int64     `db:"id" json:"id"`
+  UserID         int64     `db:"user_id" json:"user_id"`
+  RoomID         int64     `db:"room_id" json:"room_id"`
+  AvailabilityID int64     `db:"availability_id" json:"availability_id"`
+  GuestName      string    `db:"guest_name" json:"guest_name"`
+  GuestPhone     string    `db:"guest_phone" json:"guest_phone"`
+  Notes          string    `db:"notes" json:"notes"`
+  Status         string    `db:"status" json:"status"`
+  CreatedAt      time.Time `db:"created_at" json:"created_at"`
+  RoomName       string    `db:"room_name" json:"room_name"`
+  RoomNo         string    `db:"room_no" json:"room_no"`
+  RoomType       string    `db:"room_type" json:"room_type"`
+  RoomCapacity   int       `db:"room_capacity" json:"room_capacity"`
+  RoomPrice      int64     `db:"room_price" json:"room_price"`
+  Date           string    `db:"date" json:"date"`
+  TimeStart      string    `db:"time_start" json:"time_start"`
+  TimeEnd        string    `db:"time_end" json:"time_end"`
+}

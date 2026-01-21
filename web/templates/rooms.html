@@ -1,0 +1,30 @@
+{{define "content"}}
+<h1>Rooms</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Room No</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Capacity</th>
+      <th>Price Per Slot</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Rooms}}
+    <tr>
+      <td>{{.RoomNo}}</td>
+      <td>{{.Name}}</td>
+      <td>{{.Type}}</td>
+      <td>{{.Capacity}}</td>
+      <td>{{.PricePerSlot}}</td>
+      <td>{{.Status}}</td>
+    </tr>
+    {{else}}
+    <tr><td colspan="6">No rooms</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

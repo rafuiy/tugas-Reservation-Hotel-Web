@@ -1,0 +1,66 @@
+{{define "content"}}
+<h1>Admin Rooms</h1>
+<section class="card">
+  <h2>Create Room</h2>
+  <form method="post" action="/admin/rooms" class="grid">
+    <input type="text" name="room_no" placeholder="Room No" required>
+    <input type="text" name="name" placeholder="Name" required>
+    <input type="text" name="type" placeholder="Type" required>
+    <input type="number" name="capacity" placeholder="Capacity" min="1" required>
+    <input type="number" name="price_per_slot" placeholder="Price" min="0" required>
+    <select name="status" required>
+      <option value="ACTIVE">ACTIVE</option>
+      <option value="INACTIVE">INACTIVE</option>
+    </select>
+    <button type="submit">Create</button>
+  </form>
+</section>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Room No</th>
+      <th>Name</th>
+      <th>Type</th>
+      <th>Capacity</th>
+      <th>Price</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Rooms}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.RoomNo}}</td>
+      <td>{{.Name}}</td>
+      <td>{{.Type}}</td>
+      <td>{{.Capacity}}</td>
+      <td>{{.PricePerSlot}}</td>
+      <td>{{.Status}}</td>
+      <td>
+        <form method="post" action="/admin/rooms/{{.ID}}/update" class="inline">
+          <input type="text" name="room_no" value="{{.RoomNo}}" required>
+          <input type="text" name="name" value="{{.Name}}" required>
+          <input type="text" name="type" value="{{.Type}}" required>
+          <input type="number" name="capacity" value="{{.Capacity}}" min="1" required>
+          <input type="number" name="price_per_slot" value="{{.PricePerSlot}}" min="0" required>
+          <select name="status">
+            <option value="ACTIVE" {{if eq .Status "ACTIVE"}}selected{{end}}>ACTIVE</option>
+            <option value="INACTIVE" {{if eq .Status "INACTIVE"}}selected{{end}}>INACTIVE</option>
+          </select>
+          <button type="submit">Update</button>
+        </form>
+        <form method="post" action="/admin/rooms/{{.ID}}/delete" class="inline">
+          <button type="submit" class="danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="8">No rooms</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

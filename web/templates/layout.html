@@ -1,0 +1,53 @@
+{{define "layout"}}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}}</title>
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="nav-left">
+      <a href="/" class="brand">Hotel Reservasi</a>
+      {{if eq .Role "USER"}}
+        <a href="/rooms">Rooms</a>
+        <a href="/availability">Availability</a>
+        <a href="/bookings/my">My Bookings</a>
+        <a href="/payments/my">My Payments</a>
+      {{end}}
+      {{if eq .Role "ADMIN"}}
+        <a href="/admin">Admin</a>
+        <a href="/admin/rooms">Rooms</a>
+        <a href="/admin/availability">Availability</a>
+        <a href="/admin/bookings">Bookings</a>
+        <a href="/admin/payments">Payments</a>
+        <a href="/admin/users">Users</a>
+      {{end}}
+    </div>
+    <div class="nav-right">
+      {{if .Role}}
+        <form method="post" action="/logout">
+          <button type="submit" class="link-btn">Logout</button>
+        </form>
+      {{else}}
+        <a href="/login">Login</a>
+      {{end}}
+    </div>
+  </nav>
+
+  <main class="container">
+    {{if .Flash}}
+      <div class="alert success">{{.Flash}}</div>
+    {{end}}
+    {{if .Error}}
+      <div class="alert error">{{.Error}}</div>
+    {{end}}
+
+    {{template "content" .}}
+  </main>
+</body>
+</html>
+{{end}}
+

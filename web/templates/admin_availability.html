@@ -1,0 +1,62 @@
+{{define "content"}}
+<h1>Admin Availability</h1>
+<section class="card">
+  <h2>Create Availability</h2>
+  <form method="post" action="/admin/availability" class="grid">
+    <select name="room_id" required>
+      {{range .Rooms}}
+        <option value="{{.ID}}">{{.RoomNo}} - {{.Name}}</option>
+      {{end}}
+    </select>
+    <input type="date" name="date" required>
+    <input type="time" name="time_start" required>
+    <input type="time" name="time_end" required>
+    <label class="checkbox">
+      <input type="checkbox" name="is_open" checked> Open
+    </label>
+    <button type="submit">Create</button>
+  </form>
+</section>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Room</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Open</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Availability}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.RoomNo}} - {{.RoomName}}</td>
+      <td>{{.Date}}</td>
+      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
+      <td>{{.IsOpen}}</td>
+      <td>
+        <form method="post" action="/admin/availability/{{.ID}}/update" class="inline">
+          <input type="number" name="room_id" value="{{.RoomID}}" min="1" required>
+          <input type="date" name="date" value="{{.Date}}" required>
+          <input type="time" name="time_start" value="{{.TimeStart}}" required>
+          <input type="time" name="time_end" value="{{.TimeEnd}}" required>
+          <label class="checkbox">
+            <input type="checkbox" name="is_open" {{if .IsOpen}}checked{{end}}> Open
+          </label>
+          <button type="submit">Update</button>
+        </form>
+        <form method="post" action="/admin/availability/{{.ID}}/delete" class="inline">
+          <button type="submit" class="danger">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="6">No availability</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

@@ -1,0 +1,28 @@
+{{define "content"}}
+<h1>Admin Users</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Name</th>
+      <th>Email</th>
+      <th>Phone</th>
+      <th>Role</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Users}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.Name}}</td>
+      <td>{{.Email}}</td>
+      <td>{{.Phone}}</td>
+      <td>{{.Role}}</td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No users</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

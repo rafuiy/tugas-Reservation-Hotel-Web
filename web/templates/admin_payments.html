@@ -1,0 +1,40 @@
+{{define "content"}}
+<h1>Admin Payments</h1>
+<form method="get" action="/admin/payments" class="filters">
+  <select name="status">
+    <option value="">All</option>
+    <option value="UNPAID">UNPAID</option>
+    <option value="PAID">PAID</option>
+    <option value="FAILED">FAILED</option>
+  </select>
+  <button type="submit">Filter</button>
+</form>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Booking</th>
+      <th>User</th>
+      <th>Amount</th>
+      <th>Method</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Payments}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.BookingID}}</td>
+      <td>{{.UserID}}</td>
+      <td>{{.Amount}}</td>
+      <td>{{.Method}}</td>
+      <td>{{.Status}}</td>
+    </tr>
+    {{else}}
+    <tr><td colspan="6">No payments</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

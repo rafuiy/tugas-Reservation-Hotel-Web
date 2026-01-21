@@ -1,0 +1,30 @@
+{{define "content"}}
+<h1>My Bookings</h1>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Room</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Invoice</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Bookings}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.RoomNo}} - {{.RoomName}}</td>
+      <td>{{.Date}}</td>
+      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
+      <td>{{.Status}}</td>
+      <td><a href="/invoice/{{.ID}}">View</a></td>
+    </tr>
+    {{else}}
+    <tr><td colspan="6">No bookings</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+

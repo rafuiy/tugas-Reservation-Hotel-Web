@@ -1,0 +1,74 @@
+{{define "content"}}
+<h1>My Payments</h1>
+
+<section class="card">
+  <h2>Create Payment</h2>
+  <form method="post" action="/payments" class="inline">
+    <input type="number" name="booking_id" placeholder="Booking ID" required>
+    <input type="text" name="method" placeholder="Method (TRANSFER/CASH)" required>
+    <button type="submit">Create</button>
+  </form>
+  <p class="muted">Booking yang status APPROVED dapat dibayar.</p>
+</section>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Booking</th>
+      <th>Amount</th>
+      <th>Method</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Payments}}
+    <tr>
+      <td>{{.ID}}</td>
+      <td>{{.BookingID}}</td>
+      <td>{{.Amount}}</td>
+      <td>{{.Method}}</td>
+      <td>{{.Status}}</td>
+      <td>
+        {{if ne .Status "PAID"}}
+        <form method="post" action="/payments/{{.ID}}/pay" class="inline">
+          <button type="submit">Mark Paid</button>
+        </form>
+        {{else}}-
+        {{end}}
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="6">No payments</td></tr>
+    {{end}}
+  </tbody>
+</table>
+
+<section class="card">
+  <h2>My Bookings (Reference)</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Status</th>
+        <th>Room</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Bookings}}
+      <tr>
+        <td>{{.ID}}</td>
+        <td>{{.Status}}</td>
+        <td>{{.RoomNo}} - {{.RoomName}}</td>
+        <td>{{.Date}}</td>
+      </tr>
+      {{else}}
+      <tr><td colspan="4">No bookings</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}
+

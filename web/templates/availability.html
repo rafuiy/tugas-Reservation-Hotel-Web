@@ -1,0 +1,50 @@
+{{define "content"}}
+<h1>Availability</h1>
+<form method="get" action="/availability" class="filters">
+  <input type="date" name="date" value="{{.FilterDate}}">
+  <select name="room_id">
+    <option value="">All Rooms</option>
+    {{range .Rooms}}
+      <option value="{{.ID}}">{{.RoomNo}} - {{.Name}}</option>
+    {{end}}
+  </select>
+  <button type="submit">Filter</button>
+</form>
+
+<table class="table">
+  <thead>
+    <tr>
+      <th>Room</th>
+      <th>Date</th>
+      <th>Time</th>
+      <th>Status</th>
+      <th>Book</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{range .Availability}}
+    <tr>
+      <td>{{.RoomNo}} - {{.RoomName}}</td>
+      <td>{{.Date}}</td>
+      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
+      <td>{{if .IsOpen}}OPEN{{else}}CLOSED{{end}}</td>
+      <td>
+        {{if .IsOpen}}
+        <form method="post" action="/bookings" class="inline">
+          <input type="hidden" name="availability_id" value="{{.ID}}">
+          <input type="text" name="guest_name" placeholder="Guest name" required>
+          <input type="text" name="guest_phone" placeholder="Guest phone" required>
+          <input type="text" name="notes" placeholder="Notes">
+          <button type="submit">Book</button>
+        </form>
+        {{else}}-
+        {{end}}
+      </td>
+    </tr>
+    {{else}}
+    <tr><td colspan="5">No availability</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+
