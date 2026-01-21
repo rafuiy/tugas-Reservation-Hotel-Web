@@ -4,7 +4,7 @@ Project ini adalah aplikasi reservasi hotel sederhana berbasis Go (Gin) dengan U
 
 ## Prasyarat
 - Go >= 1.22
-- Docker + Docker Compose (untuk Postgres)
+- Docker + Docker Compose (untuk Postgres #OPTIONAL)
 
 ## Konfigurasi
 Salin `.env.example` menjadi `.env`, lalu sesuaikan nilainya.
