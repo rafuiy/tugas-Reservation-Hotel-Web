@@ -28,9 +28,31 @@ func Migrate(database *sqlx.DB, dir string) error {
     return err
   }
 
-  entries, err := os.ReadDir(dir)
+  resolvedDir := dir
+  entries, err := os.ReadDir(resolvedDir)
   if err != nil {
-    return err
+    candidates := []string{}
+    if envDir := os.Getenv("MIGRATIONS_DIR"); envDir != "" {
+      candidates = append(candidates, envDir)
+    }
+    candidates = append(candidates, "/app/migrations")
+    if exe, exErr := os.Executable(); exErr == nil {
+      candidates = append(candidates, filepath.Join(filepath.Dir(exe), dir))
+    }
+    for _, candidate := range candidates {
+      if candidate == "" || candidate == resolvedDir {
+        continue
+      }
+      if fallbackEntries, fallbackErr := os.ReadDir(candidate); fallbackErr == nil {
+        resolvedDir = candidate
+        entries = fallbackEntries
+        err = nil
+        break
+      }
+    }
+    if err != nil {
+      return err
+    }
   }
 
   files := make([]string, 0, len(entries))
@@ -64,7 +86,7 @@ func Migrate(database *sqlx.DB, dir string) error {
     if applied[name] {
       continue
     }
-    path := filepath.Join(dir, name)
+    path := filepath.Join(resolvedDir, name)
     content, err := os.ReadFile(path)
     if err != nil {
       return err
