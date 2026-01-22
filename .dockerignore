@@ -1,0 +1,29 @@
+# flyctl launch added from .gitignore
+# env
+**\.env
+
+# Go build/test artifacts
+**\*.exe
+**\*.exe~
+**\*.test
+**\*.out
+**\*.log
+**\bin
+**\dist
+**\out
+**\tmp
+**\coverage
+**\coverage.out
+
+# Go workspace
+go.work
+go.work.sum
+
+# IDE/editor
+**\.vscode
+**\.idea
+
+# OS files
+**\.DS_Store
+**\Thumbs.db
+fly.toml
