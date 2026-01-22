@@ -10,7 +10,7 @@ Aplikasi reservasi hotel sederhana berbasis Go (Gin) dengan UI server-rendered (
 
 1) Clone repo
 ```bash
-git clone <URL_REPO_KAMU>
+git clone https://github.com/rafuiy/tugas-Reservation-Hotel-Web.git
 cd <NAMA FOLDER KAMU>
 ```
 
