@@ -3,7 +3,9 @@
   <div>
     <p class="eyebrow">Admin</p>
     <h1>Admin Payments</h1>
-    <p class="muted">Pantau status pembayaran dan pastikan transaksi selesai.</p>
+    <p class="muted">
+      Pantau status pembayaran dan pastikan transaksi selesai.
+    </p>
   </div>
   <div class="flow-actions">
     <a class="btn outline" href="/admin/bookings">Kembali ke bookings</a>
@@ -44,12 +46,15 @@
       <td>{{.Amount}}</td>
       <td>{{.Method}}</td>
       <td><span class="pill">{{.Status}}</span></td>
-      <td><a href="/invoice/{{.BookingID}}">View</a></td>
+      <td>
+        <a href="/invoice/{{.ID}}" class="btn primary sm">Invoice</a>
+      </td>
     </tr>
     {{else}}
-    <tr><td colspan="7">No payments</td></tr>
+    <tr>
+      <td colspan="7">No payments</td>
+    </tr>
     {{end}}
   </tbody>
 </table>
 {{end}}
-

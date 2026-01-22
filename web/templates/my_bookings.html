@@ -34,12 +34,15 @@
       <td>{{.TotalDays}}</td>
       <td>{{.TotalAmount}}</td>
       <td><span class="pill">{{.Status}}</span></td>
-      <td><a href="/invoice/{{.ID}}">View</a></td>
+      <td>
+        <a href="/invoice/{{.ID}}" class="btn primary sm">Invoice</a>
+      </td>
     </tr>
     {{else}}
-    <tr><td colspan="8">No bookings</td></tr>
+    <tr>
+      <td colspan="8">No bookings</td>
+    </tr>
     {{end}}
   </tbody>
 </table>
 {{end}}
-
