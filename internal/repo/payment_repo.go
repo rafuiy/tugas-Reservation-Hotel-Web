@@ -40,12 +40,12 @@ func (r *PaymentRepo) ListByUser(ctx context.Context, userID int64) ([]model.Pay
 
   query := `SELECT p.id, p.booking_id, p.amount, p.method, p.status, p.paid_at, p.reference, p.created_at,
                    b.user_id, b.status AS booking_status,
-                   r.name AS room_name, r.room_no,
-                   a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end
+                   COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+                   COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
+                   r.name AS room_name, r.room_no
             FROM payments p
             JOIN bookings b ON b.id = p.booking_id
             JOIN rooms r ON r.id = b.room_id
-            JOIN availability a ON a.id = b.availability_id
             WHERE b.user_id=$1
             ORDER BY p.created_at DESC`
 
@@ -60,12 +60,12 @@ func (r *PaymentRepo) ListAdmin(ctx context.Context, status string) ([]model.Pay
 
   query := `SELECT p.id, p.booking_id, p.amount, p.method, p.status, p.paid_at, p.reference, p.created_at,
                    b.user_id, b.status AS booking_status,
-                   r.name AS room_name, r.room_no,
-                   a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end
+                   COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+                   COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
+                   r.name AS room_name, r.room_no
             FROM payments p
             JOIN bookings b ON b.id = p.booking_id
             JOIN rooms r ON r.id = b.room_id
-            JOIN availability a ON a.id = b.availability_id
             WHERE 1=1`
   args := []interface{}{}
   if status != "" {

@@ -3,9 +3,11 @@ package handler
 import (
   "database/sql"
   "net/http"
+  "strconv"
 
   "github.com/gin-gonic/gin"
 
+  "project_ap3/internal/model"
   "project_ap3/internal/service"
 )
 
@@ -17,15 +19,25 @@ func (h *Handler) MyPaymentsPage(c *gin.Context) {
     h.render(c, "My Payments", "my_payments", gin.H{
       "Payments": []interface{}{},
       "Bookings": []interface{}{},
+      "PaymentByBooking": map[int64]model.PaymentView{},
+      "PaymentStatusByBooking": map[int64]string{},
       "Error":    "server_error",
     })
     return
   }
 
   bookings, _ := h.Bookings.ListByUser(c.Request.Context(), userID)
+  paymentByBooking := map[int64]model.PaymentView{}
+  paymentStatusByBooking := map[int64]string{}
+  for _, payment := range payments {
+    paymentByBooking[payment.BookingID] = payment
+    paymentStatusByBooking[payment.BookingID] = payment.Status
+  }
   h.render(c, "My Payments", "my_payments", gin.H{
     "Payments": payments,
     "Bookings": bookings,
+    "PaymentByBooking": paymentByBooking,
+    "PaymentStatusByBooking": paymentStatusByBooking,
   })
 }
 
@@ -41,11 +53,18 @@ func (h *Handler) CreatePayment(c *gin.Context) {
     c.Redirect(http.StatusFound, "/payments/my?err=invalid_input")
     return
   }
+  var amount int64
+  if amountStr := c.PostForm("amount"); amountStr != "" {
+    if parsed, err := strconv.ParseInt(amountStr, 10, 64); err == nil {
+      amount = parsed
+    }
+  }
 
   _, err = h.PaymentService.Create(c.Request.Context(), service.PaymentCreateInput{
     BookingID: bookingID,
     UserID:    userID,
     Method:    method,
+    Amount:    amount,
   })
   if err != nil {
     h.setDebugErrorHeader(c, err)
@@ -58,6 +77,9 @@ func (h *Handler) CreatePayment(c *gin.Context) {
       return
     case service.ErrInvalid:
       c.Redirect(http.StatusFound, "/payments/my?err=invalid_booking")
+      return
+    case service.ErrAmountMismatch:
+      c.Redirect(http.StatusFound, "/payments/my?err=amount_mismatch")
       return
     case service.ErrConflict:
       c.Redirect(http.StatusFound, "/payments/my?err=already_paid")

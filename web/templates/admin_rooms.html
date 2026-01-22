@@ -1,17 +1,54 @@
 {{define "content"}}
-<h1>Admin Rooms</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Admin Rooms</h1>
+    <p class="muted">Buat dan kelola ruangan untuk ditampilkan ke publik.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/admin">Kembali ke dashboard</a>
+    <a class="btn primary" href="/admin/bookings">Next: Kelola booking</a>
+  </div>
+</section>
+
 <section class="card">
   <h2>Create Room</h2>
-  <form method="post" action="/admin/rooms" class="grid">
-    <input type="text" name="room_no" placeholder="Room No" required>
-    <input type="text" name="name" placeholder="Name" required>
-    <input type="text" name="type" placeholder="Type" required>
-    <input type="number" name="capacity" placeholder="Capacity" min="1" required>
-    <input type="number" name="price_per_slot" placeholder="Price" min="0" required>
-    <select name="status" required>
-      <option value="ACTIVE">ACTIVE</option>
-      <option value="INACTIVE">INACTIVE</option>
-    </select>
+  <form method="post" action="/admin/rooms" class="form-stack">
+    <label>Room No
+      <input type="text" name="room_no" placeholder="Contoh: 101" required>
+    </label>
+    <label>Name
+      <input type="text" name="name" placeholder="Nama ruangan" required>
+    </label>
+    <label>Type
+      <select name="type" required>
+        <option value="STANDARD">STANDARD (+0%)</option>
+        <option value="SUPERIOR">SUPERIOR (+10%)</option>
+        <option value="DELUXE">DELUXE (+20%)</option>
+        <option value="SUITE">SUITE (+35%)</option>
+        <option value="EXECUTIVE">EXECUTIVE (+45%)</option>
+        <option value="PRESIDENTIAL">PRESIDENTIAL (+70%)</option>
+      </select>
+    </label>
+    <label>Capacity
+      <input type="number" name="capacity" placeholder="Jumlah orang" min="1" required>
+    </label>
+    <label>Base price per day
+      <input type="number" name="base_price" placeholder="Harga dasar per hari" min="0" required>
+    </label>
+    <p class="muted">Harga final otomatis ditambah sesuai tipe ruangan.</p>
+    <label>Image URL
+      <input type="text" name="image_url" placeholder="https://...">
+    </label>
+    <label>Facilities
+      <input type="text" name="facilities" placeholder="Pisahkan dengan koma, mis. TV, AC, Wifi">
+    </label>
+    <label>Status
+      <select name="status" required>
+        <option value="ACTIVE">ACTIVE</option>
+        <option value="INACTIVE">INACTIVE</option>
+      </select>
+    </label>
     <button type="submit">Create</button>
   </form>
 </section>
@@ -24,7 +61,10 @@
       <th>Name</th>
       <th>Type</th>
       <th>Capacity</th>
+      <th>Base</th>
       <th>Price</th>
+      <th>Image</th>
+      <th>Facilities</th>
       <th>Status</th>
       <th>Actions</th>
     </tr>
@@ -37,15 +77,30 @@
       <td>{{.Name}}</td>
       <td>{{.Type}}</td>
       <td>{{.Capacity}}</td>
+      <td>{{.BasePrice}}</td>
       <td>{{.PricePerSlot}}</td>
+      <td>{{if .ImageURL}}<a href="{{.ImageURL}}" target="_blank">View</a>{{else}}-{{end}}</td>
+      <td>{{if .Facilities}}{{.Facilities}}{{else}}-{{end}}</td>
       <td>{{.Status}}</td>
       <td>
         <form method="post" action="/admin/rooms/{{.ID}}/update" class="inline">
           <input type="text" name="room_no" value="{{.RoomNo}}" required>
           <input type="text" name="name" value="{{.Name}}" required>
-          <input type="text" name="type" value="{{.Type}}" required>
+          <select name="type" required>
+            {{if and (ne .Type "STANDARD") (ne .Type "SUPERIOR") (ne .Type "DELUXE") (ne .Type "SUITE") (ne .Type "EXECUTIVE") (ne .Type "PRESIDENTIAL")}}
+              <option value="{{.Type}}" selected>{{.Type}}</option>
+            {{end}}
+            <option value="STANDARD" {{if eq .Type "STANDARD"}}selected{{end}}>STANDARD (+0%)</option>
+            <option value="SUPERIOR" {{if eq .Type "SUPERIOR"}}selected{{end}}>SUPERIOR (+10%)</option>
+            <option value="DELUXE" {{if eq .Type "DELUXE"}}selected{{end}}>DELUXE (+20%)</option>
+            <option value="SUITE" {{if eq .Type "SUITE"}}selected{{end}}>SUITE (+35%)</option>
+            <option value="EXECUTIVE" {{if eq .Type "EXECUTIVE"}}selected{{end}}>EXECUTIVE (+45%)</option>
+            <option value="PRESIDENTIAL" {{if eq .Type "PRESIDENTIAL"}}selected{{end}}>PRESIDENTIAL (+70%)</option>
+          </select>
           <input type="number" name="capacity" value="{{.Capacity}}" min="1" required>
-          <input type="number" name="price_per_slot" value="{{.PricePerSlot}}" min="0" required>
+          <input type="number" name="base_price" value="{{.BasePrice}}" min="0" required>
+          <input type="text" name="image_url" value="{{.ImageURL}}" placeholder="Image URL">
+          <input type="text" name="facilities" value="{{.Facilities}}" placeholder="Facilities (pisahkan dengan koma)">
           <select name="status">
             <option value="ACTIVE" {{if eq .Status "ACTIVE"}}selected{{end}}>ACTIVE</option>
             <option value="INACTIVE" {{if eq .Status "INACTIVE"}}selected{{end}}>INACTIVE</option>
@@ -58,7 +113,7 @@
       </td>
     </tr>
     {{else}}
-    <tr><td colspan="8">No rooms</td></tr>
+    <tr><td colspan="11">No rooms</td></tr>
     {{end}}
   </tbody>
 </table>

@@ -1,62 +1,54 @@
 {{define "content"}}
-<h1>Admin Availability</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Jadwal Booking</h1>
+    <p class="muted">Lihat ruangan mana yang sudah dibooking dan durasinya.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/admin/rooms">Kembali ke rooms</a>
+    <a class="btn primary" href="/admin/bookings">Kelola booking</a>
+  </div>
+</section>
+
 <section class="card">
-  <h2>Create Availability</h2>
-  <form method="post" action="/admin/availability" class="grid">
-    <select name="room_id" required>
+  <form method="get" action="/admin/availability" class="filters">
+    <select name="room_id">
+      <option value="">All Rooms</option>
       {{range .Rooms}}
-        <option value="{{.ID}}">{{.RoomNo}} - {{.Name}}</option>
+        <option value="{{.ID}}" {{if eq .ID $.FilterRoomIDValue}}selected{{end}}>{{.RoomNo}} - {{.Name}}</option>
       {{end}}
     </select>
-    <input type="date" name="date" required>
-    <input type="time" name="time_start" required>
-    <input type="time" name="time_end" required>
-    <label class="checkbox">
-      <input type="checkbox" name="is_open" checked> Open
-    </label>
-    <button type="submit">Create</button>
+    <button type="submit">Filter</button>
   </form>
 </section>
 
 <table class="table">
   <thead>
     <tr>
-      <th>ID</th>
+      <th>Booking ID</th>
+      <th>User</th>
       <th>Room</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Open</th>
-      <th>Actions</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Days</th>
+      <th>Status</th>
     </tr>
   </thead>
   <tbody>
-    {{range .Availability}}
+    {{range .Booked}}
     <tr>
       <td>{{.ID}}</td>
+      <td>{{.UserID}}</td>
       <td>{{.RoomNo}} - {{.RoomName}}</td>
-      <td>{{.Date}}</td>
-      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
-      <td>{{.IsOpen}}</td>
-      <td>
-        <form method="post" action="/admin/availability/{{.ID}}/update" class="inline">
-          <input type="number" name="room_id" value="{{.RoomID}}" min="1" required>
-          <input type="date" name="date" value="{{.Date}}" required>
-          <input type="time" name="time_start" value="{{.TimeStart}}" required>
-          <input type="time" name="time_end" value="{{.TimeEnd}}" required>
-          <label class="checkbox">
-            <input type="checkbox" name="is_open" {{if .IsOpen}}checked{{end}}> Open
-          </label>
-          <button type="submit">Update</button>
-        </form>
-        <form method="post" action="/admin/availability/{{.ID}}/delete" class="inline">
-          <button type="submit" class="danger">Delete</button>
-        </form>
-      </td>
+      <td>{{.StartDate}}</td>
+      <td>{{.EndDate}}</td>
+      <td>{{.TotalDays}}</td>
+      <td><span class="pill">{{.Status}}</span></td>
     </tr>
     {{else}}
-    <tr><td colspan="6">No availability</td></tr>
+    <tr><td colspan="7">Belum ada booking.</td></tr>
     {{end}}
   </tbody>
 </table>
 {{end}}
-

@@ -23,7 +23,14 @@ func (r *BookingRepo) GetByID(ctx context.Context, id int64) (*model.Booking, er
   defer cancel()
 
   var booking model.Booking
-  err := r.DB.GetContext(ctx, &booking, `SELECT * FROM bookings WHERE id=$1`, id)
+  err := r.DB.GetContext(ctx, &booking, `
+    SELECT id, user_id, room_id, guest_name, guest_phone, notes, status,
+           COALESCE(start_date::text, '') AS start_date, COALESCE(end_date::text, '') AS end_date,
+           COALESCE(total_days, 0) AS total_days, COALESCE(total_amount, 0) AS total_amount,
+           created_at
+    FROM bookings
+    WHERE id=$1
+  `, id)
   if err == sql.ErrNoRows {
     return nil, nil
   }
@@ -37,12 +44,14 @@ func (r *BookingRepo) ListByUser(ctx context.Context, userID int64) ([]model.Boo
   ctx, cancel := withTimeout(ctx)
   defer cancel()
 
-  query := `SELECT b.id, b.user_id, b.room_id, b.availability_id, b.guest_name, b.guest_phone, b.notes, b.status, b.created_at,
+  query := `SELECT b.id, b.user_id, b.room_id, b.guest_name, b.guest_phone, b.notes, b.status,
+                   COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+                   COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
+                   b.created_at,
                    r.name AS room_name, r.room_no, r.type AS room_type, r.capacity AS room_capacity, r.price_per_slot AS room_price,
-                   a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end
+                   COALESCE(r.image_url, '') AS room_image
             FROM bookings b
             JOIN rooms r ON r.id = b.room_id
-            JOIN availability a ON a.id = b.availability_id
             WHERE b.user_id=$1
             ORDER BY b.created_at DESC`
 
@@ -55,12 +64,14 @@ func (r *BookingRepo) ListAdmin(ctx context.Context, status string) ([]model.Boo
   ctx, cancel := withTimeout(ctx)
   defer cancel()
 
-  query := `SELECT b.id, b.user_id, b.room_id, b.availability_id, b.guest_name, b.guest_phone, b.notes, b.status, b.created_at,
+  query := `SELECT b.id, b.user_id, b.room_id, b.guest_name, b.guest_phone, b.notes, b.status,
+                   COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+                   COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
+                   b.created_at,
                    r.name AS room_name, r.room_no, r.type AS room_type, r.capacity AS room_capacity, r.price_per_slot AS room_price,
-                   a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end
+                   COALESCE(r.image_url, '') AS room_image
             FROM bookings b
             JOIN rooms r ON r.id = b.room_id
-            JOIN availability a ON a.id = b.availability_id
             WHERE 1=1`
   args := []interface{}{}
   if status != "" {
@@ -68,6 +79,31 @@ func (r *BookingRepo) ListAdmin(ctx context.Context, status string) ([]model.Boo
     query += fmt.Sprintf(" AND b.status = $%d", len(args))
   }
   query += " ORDER BY b.created_at DESC"
+
+  var rows []model.BookingView
+  err := r.DB.SelectContext(ctx, &rows, query, args...)
+  return rows, err
+}
+
+func (r *BookingRepo) ListSchedule(ctx context.Context, roomID *int64) ([]model.BookingView, error) {
+  ctx, cancel := withTimeout(ctx)
+  defer cancel()
+
+  query := `SELECT b.id, b.user_id, b.room_id, b.guest_name, b.guest_phone, b.notes, b.status,
+                   COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+                   COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
+                   b.created_at,
+                   r.name AS room_name, r.room_no, r.type AS room_type, r.capacity AS room_capacity, r.price_per_slot AS room_price,
+                   COALESCE(r.image_url, '') AS room_image
+            FROM bookings b
+            JOIN rooms r ON r.id = b.room_id
+            WHERE b.status IN ('PENDING','APPROVED')`
+  args := []interface{}{}
+  if roomID != nil {
+    args = append(args, *roomID)
+    query += fmt.Sprintf(" AND b.room_id = $%d", len(args))
+  }
+  query += " ORDER BY b.start_date, b.end_date"
 
   var rows []model.BookingView
   err := r.DB.SelectContext(ctx, &rows, query, args...)

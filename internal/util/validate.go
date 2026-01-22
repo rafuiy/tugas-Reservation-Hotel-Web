@@ -36,6 +36,38 @@ func ValidateRoomStatus(status string) bool {
   return status == "ACTIVE" || status == "INACTIVE"
 }
 
+func NormalizeRoomType(roomType string) string {
+  return strings.ToUpper(strings.TrimSpace(roomType))
+}
+
+func ValidateRoomType(roomType string) bool {
+  _, ok := roomTypeMultiplier()[NormalizeRoomType(roomType)]
+  return ok
+}
+
+func ApplyRoomTypeMultiplier(basePrice int64, roomType string) (int64, bool) {
+  if basePrice < 0 {
+    return 0, false
+  }
+  percent, ok := roomTypeMultiplier()[NormalizeRoomType(roomType)]
+  if !ok {
+    return 0, false
+  }
+  adjusted := basePrice + (basePrice*percent)/100
+  return adjusted, true
+}
+
+func roomTypeMultiplier() map[string]int64 {
+  return map[string]int64{
+    "STANDARD":      0,
+    "SUPERIOR":      10,
+    "DELUXE":        20,
+    "SUITE":         35,
+    "EXECUTIVE":     45,
+    "PRESIDENTIAL":  70,
+  }
+}
+
 func ValidateBookingStatus(status string) bool {
   switch status {
   case "PENDING", "APPROVED", "REJECTED", "CANCELLED":

@@ -1,14 +1,33 @@
 {{define "content"}}
-<h1>Login</h1>
-<form method="post" action="/login" class="card">
-  <label>Email
-    <input type="email" name="email" required>
-  </label>
-  <label>Password
-    <input type="password" name="password" required>
-  </label>
-  <button type="submit">Login</button>
-</form>
-<p class="muted">Belum punya akun? <a href="/register">Register</a></p>
+<div class="auth-grid">
+  <section>
+    <p class="eyebrow">Masuk</p>
+    <h1>Login untuk melanjutkan booking</h1>
+    <p class="muted">Masuk agar bisa booking dan melanjutkan pembayaran.</p>
+    <form method="post" action="/login" class="card">
+      <label>Email
+        <input type="email" name="email" required>
+      </label>
+      <label>Password
+        <input type="password" name="password" required>
+      </label>
+      <div class="flow-actions">
+        <button type="submit">Login</button>
+        <a class="btn ghost" href="/register">Buat akun baru</a>
+      </div>
+    </form>
+    <div class="flow-actions">
+      <a class="btn outline" href="/rooms">Kembali ke rooms</a>
+      <a class="btn ghost" href="/availability">Cek ketersediaan</a>
+    </div>
+  </section>
+  <aside class="card">
+    <h2>Kenapa login?</h2>
+    <div class="stat-list">
+      <p class="muted">Setelah login, kamu bisa booking langsung dari halaman ketersediaan.</p>
+      <p class="muted">Pembayaran bisa dilakukan dari menu My Payments.</p>
+    </div>
+  </aside>
+</div>
 {{end}}
 

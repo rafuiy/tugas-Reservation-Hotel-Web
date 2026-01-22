@@ -28,6 +28,10 @@ func main() {
   }
   defer database.Close()
 
+  if err := db.Migrate(database, "migrations"); err != nil {
+    log.Fatal(err)
+  }
+
   users := repo.NewUserRepo(database)
   rooms := repo.NewRoomRepo(database)
   availability := repo.NewAvailabilityRepo(database)
@@ -55,11 +59,12 @@ func main() {
   r.POST("/register", h.PostRegister)
   r.GET("/logout", h.Logout)
   r.POST("/logout", h.Logout)
+  r.GET("/rooms", middleware.TryAuth(cfg.JWTSecret), h.RoomsPage)
+  r.GET("/rooms/:id", middleware.TryAuth(cfg.JWTSecret), h.RoomDetailPage)
+  r.GET("/availability", middleware.TryAuth(cfg.JWTSecret), h.AvailabilityPage)
 
   user := r.Group("/")
   user.Use(middleware.RequireAuth(cfg.JWTSecret, false), middleware.RequireRole("USER", false))
-  user.GET("/rooms", h.RoomsPage)
-  user.GET("/availability", h.AvailabilityPage)
   user.GET("/bookings/my", h.MyBookingsPage)
   user.POST("/bookings", h.CreateBooking)
   user.GET("/payments/my", h.MyPaymentsPage)
@@ -76,9 +81,6 @@ func main() {
   admin.POST("/rooms/:id/delete", h.AdminDeleteRoom)
 
   admin.GET("/availability", h.AdminAvailabilityPage)
-  admin.POST("/availability", h.AdminCreateAvailability)
-  admin.POST("/availability/:id/update", h.AdminUpdateAvailability)
-  admin.POST("/availability/:id/delete", h.AdminDeleteAvailability)
 
   admin.GET("/bookings", h.AdminBookingsPage)
   admin.POST("/bookings/:id/approve", h.AdminApproveBooking)
@@ -115,9 +117,6 @@ func main() {
   apiAdmin.DELETE("/rooms/:id", h.AdminDeleteRoomAPI)
 
   apiAdmin.GET("/availability", h.AdminAvailabilityAPI)
-  apiAdmin.POST("/availability", h.AdminCreateAvailabilityAPI)
-  apiAdmin.PATCH("/availability/:id", h.AdminUpdateAvailabilityAPI)
-  apiAdmin.DELETE("/availability/:id", h.AdminDeleteAvailabilityAPI)
 
   apiAdmin.GET("/bookings", h.AdminBookingsAPI)
   apiAdmin.PATCH("/bookings/:id", h.AdminUpdateBookingAPI)

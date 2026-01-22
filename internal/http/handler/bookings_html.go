@@ -21,26 +21,30 @@ func (h *Handler) MyBookingsPage(c *gin.Context) {
 
 func (h *Handler) CreateBooking(c *gin.Context) {
   userID, _ := getUserID(c)
-  availabilityID, err := parseID(c.PostForm("availability_id"))
+  roomID, err := parseID(c.PostForm("room_id"))
   if err != nil {
-    c.Redirect(http.StatusFound, "/availability?err=invalid_availability")
+    c.Redirect(http.StatusFound, "/availability?err=invalid_room")
     return
   }
+  startDate := c.PostForm("start_date")
+  endDate := c.PostForm("end_date")
   guestName := c.PostForm("guest_name")
   guestPhone := c.PostForm("guest_phone")
   notes := c.PostForm("notes")
 
-  if guestName == "" || guestPhone == "" {
+  if guestName == "" || guestPhone == "" || startDate == "" || endDate == "" {
     c.Redirect(http.StatusFound, "/availability?err=invalid_input")
     return
   }
 
   _, err = h.BookingService.Create(c.Request.Context(), service.BookingCreateInput{
-    UserID:         userID,
-    AvailabilityID: availabilityID,
-    GuestName:      guestName,
-    GuestPhone:     guestPhone,
-    Notes:          notes,
+    UserID:     userID,
+    RoomID:     roomID,
+    StartDate:  startDate,
+    EndDate:    endDate,
+    GuestName:  guestName,
+    GuestPhone: guestPhone,
+    Notes:      notes,
   })
   if err != nil {
     switch err {
@@ -48,10 +52,10 @@ func (h *Handler) CreateBooking(c *gin.Context) {
       c.Redirect(http.StatusFound, "/availability?err=conflict")
       return
     case service.ErrNotFound:
-      c.Redirect(http.StatusFound, "/availability?err=not_found")
+      c.Redirect(http.StatusFound, "/availability?err=room_not_found")
       return
     case service.ErrInvalid:
-      c.Redirect(http.StatusFound, "/availability?err=closed")
+      c.Redirect(http.StatusFound, "/availability?err=invalid_range")
       return
     default:
       c.Redirect(http.StatusFound, "/availability?err=server_error")

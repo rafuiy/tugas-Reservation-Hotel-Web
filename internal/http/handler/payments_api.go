@@ -12,6 +12,7 @@ import (
 type paymentCreateRequest struct {
   BookingID int64  `json:"booking_id"`
   Method    string `json:"method"`
+  Amount    int64  `json:"amount"`
 }
 
 type paymentUpdateRequest struct {
@@ -35,6 +36,7 @@ func (h *Handler) CreatePaymentAPI(c *gin.Context) {
     BookingID: req.BookingID,
     UserID:    userID,
     Method:    req.Method,
+    Amount:    req.Amount,
   })
   if err != nil {
     switch err {
@@ -46,6 +48,9 @@ func (h *Handler) CreatePaymentAPI(c *gin.Context) {
       return
     case service.ErrInvalid:
       respondJSON(c, http.StatusBadRequest, nil, "invalid_booking")
+      return
+    case service.ErrAmountMismatch:
+      respondJSON(c, http.StatusBadRequest, nil, "amount_mismatch")
       return
     case service.ErrConflict:
       respondJSON(c, http.StatusConflict, nil, "conflict")

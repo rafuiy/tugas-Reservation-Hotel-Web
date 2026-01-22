@@ -14,9 +14,10 @@ type Invoice struct {
   RoomType      string     `json:"room_type"`
   RoomCapacity  int        `json:"room_capacity"`
   PricePerSlot  int64      `json:"price_per_slot"`
-  Date          string     `json:"date"`
-  TimeStart     string     `json:"time_start"`
-  TimeEnd       string     `json:"time_end"`
+  StartDate     string     `json:"start_date"`
+  EndDate       string     `json:"end_date"`
+  TotalDays     int        `json:"total_days"`
+  TotalAmount   int64      `json:"total_amount"`
   PaymentID     *int64     `json:"payment_id"`
   PaymentStatus *string    `json:"payment_status"`
   PaymentMethod *string    `json:"payment_method"`

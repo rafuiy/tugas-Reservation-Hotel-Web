@@ -26,7 +26,8 @@ type PaymentView struct {
   BookingStatus string     `db:"booking_status" json:"booking_status"`
   RoomName      string     `db:"room_name" json:"room_name"`
   RoomNo        string     `db:"room_no" json:"room_no"`
-  Date          string     `db:"date" json:"date"`
-  TimeStart     string     `db:"time_start" json:"time_start"`
-  TimeEnd       string     `db:"time_end" json:"time_end"`
+  StartDate     string     `db:"start_date" json:"start_date"`
+  EndDate       string     `db:"end_date" json:"end_date"`
+  TotalDays     int        `db:"total_days" json:"total_days"`
+  TotalAmount   int64      `db:"total_amount" json:"total_amount"`
 }

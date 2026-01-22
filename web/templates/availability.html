@@ -1,50 +1,84 @@
 {{define "content"}}
-<h1>Availability</h1>
-<form method="get" action="/availability" class="filters">
-  <input type="date" name="date" value="{{.FilterDate}}">
-  <select name="room_id">
-    <option value="">All Rooms</option>
-    {{range .Rooms}}
-      <option value="{{.ID}}">{{.RoomNo}} - {{.Name}}</option>
-    {{end}}
-  </select>
-  <button type="submit">Filter</button>
-</form>
-
-<table class="table">
-  <thead>
-    <tr>
-      <th>Room</th>
-      <th>Date</th>
-      <th>Time</th>
-      <th>Status</th>
-      <th>Book</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{range .Availability}}
-    <tr>
-      <td>{{.RoomNo}} - {{.RoomName}}</td>
-      <td>{{.Date}}</td>
-      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
-      <td>{{if .IsOpen}}OPEN{{else}}CLOSED{{end}}</td>
-      <td>
-        {{if .IsOpen}}
-        <form method="post" action="/bookings" class="inline">
-          <input type="hidden" name="availability_id" value="{{.ID}}">
-          <input type="text" name="guest_name" placeholder="Guest name" required>
-          <input type="text" name="guest_phone" placeholder="Guest phone" required>
-          <input type="text" name="notes" placeholder="Notes">
-          <button type="submit">Book</button>
-        </form>
-        {{else}}-
-        {{end}}
-      </td>
-    </tr>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Ketersediaan</p>
+    <h1>Cek Ketersediaan</h1>
+    <p class="muted">Pilih kamar, lalu tentukan rentang tanggal untuk booking.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/rooms">Kembali ke daftar rooms</a>
+    {{if eq .Role "USER"}}
+      <a class="btn primary" href="/bookings/my">Lihat booking</a>
+      <a class="btn ghost" href="/payments/my">Ke pembayaran</a>
     {{else}}
-    <tr><td colspan="5">No availability</td></tr>
+      <a class="btn primary" href="/login">Login untuk booking</a>
     {{end}}
-  </tbody>
-</table>
+  </div>
+</section>
+
+<section class="card">
+  <form method="get" action="/availability" class="filters">
+    <select name="room_id">
+      <option value="">All Rooms</option>
+      {{range .Rooms}}
+        <option value="{{.ID}}" {{if eq .ID $.FilterRoomIDValue}}selected{{end}}>{{.RoomNo}} - {{.Name}}</option>
+      {{end}}
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+</section>
+
+<section class="card">
+  <h2>Booking</h2>
+  {{if .FilterRoomIDValue}}
+    {{if eq .Role "USER"}}
+    <form method="post" action="/bookings" class="grid">
+      <input type="hidden" name="room_id" value="{{.FilterRoomIDValue}}">
+      <input type="date" name="start_date" value="{{.StartDate}}" required>
+      <input type="date" name="end_date" value="{{.EndDate}}" required>
+      <input type="text" name="guest_name" placeholder="Guest name" required>
+      <input type="text" name="guest_phone" placeholder="Guest phone" required>
+      <input type="text" name="notes" placeholder="Notes">
+      <button type="submit">Book</button>
+    </form>
+    {{else}}
+      <a class="btn primary" href="/login">Login untuk booking</a>
+    {{end}}
+  {{else}}
+    <p class="muted">Pilih kamar terlebih dahulu untuk mulai booking.</p>
+  {{end}}
+</section>
+
+<section class="card">
+  <h2>Jadwal yang sudah dibooking</h2>
+  {{if .FilterRoomIDValue}}
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Room</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Days</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Booked}}
+      <tr>
+        <td>{{.RoomNo}} - {{.RoomName}}</td>
+        <td>{{.StartDate}}</td>
+        <td>{{.EndDate}}</td>
+        <td>{{.TotalDays}}</td>
+        <td><span class="pill">{{.Status}}</span></td>
+      </tr>
+      {{else}}
+      <tr><td colspan="5">Belum ada booking.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+  {{else}}
+    <p class="muted">Pilih kamar untuk melihat jadwal booked.</p>
+  {{end}}
+</section>
 {{end}}
 

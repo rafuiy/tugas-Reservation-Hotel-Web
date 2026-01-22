@@ -11,19 +11,19 @@
   <nav class="nav">
     <div class="nav-left">
       <a href="/" class="brand">Hotel Reservasi</a>
-      {{if eq .Role "USER"}}
-        <a href="/rooms">Rooms</a>
-        <a href="/availability">Availability</a>
-        <a href="/bookings/my">My Bookings</a>
-        <a href="/payments/my">My Payments</a>
-      {{end}}
       {{if eq .Role "ADMIN"}}
         <a href="/admin">Admin</a>
         <a href="/admin/rooms">Rooms</a>
-        <a href="/admin/availability">Availability</a>
         <a href="/admin/bookings">Bookings</a>
         <a href="/admin/payments">Payments</a>
         <a href="/admin/users">Users</a>
+      {{else}}
+        <a href="/rooms">Rooms</a>
+        <a href="/availability">Availability</a>
+        {{if eq .Role "USER"}}
+          <a href="/bookings/my">My Bookings</a>
+          <a href="/payments/my">My Payments</a>
+        {{end}}
       {{end}}
     </div>
     <div class="nav-right">

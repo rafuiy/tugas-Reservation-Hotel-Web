@@ -1,20 +1,40 @@
 {{define "content"}}
-<h1>Register</h1>
-<form method="post" action="/register" class="card">
-  <label>Nama
-    <input type="text" name="name" required>
-  </label>
-  <label>Email
-    <input type="email" name="email" required>
-  </label>
-  <label>Password
-    <input type="password" name="password" minlength="6" required>
-  </label>
-  <label>Phone
-    <input type="text" name="phone">
-  </label>
-  <button type="submit">Create Account</button>
-</form>
-<p class="muted">Sudah punya akun? <a href="/login">Login</a></p>
+<div class="auth-grid">
+  <section>
+    <p class="eyebrow">Buat Akun</p>
+    <h1>Daftar untuk mulai booking</h1>
+    <p class="muted">Lengkapi data agar kamu bisa booking dan melakukan pembayaran.</p>
+    <form method="post" action="/register" class="card">
+      <label>Nama
+        <input type="text" name="name" required>
+      </label>
+      <label>Email
+        <input type="email" name="email" required>
+      </label>
+      <label>Password
+        <input type="password" name="password" minlength="6" required>
+      </label>
+      <label>Phone
+        <input type="text" name="phone">
+      </label>
+      <div class="flow-actions">
+        <button type="submit">Create Account</button>
+        <a class="btn ghost" href="/login">Sudah punya akun</a>
+      </div>
+    </form>
+    <div class="flow-actions">
+      <a class="btn outline" href="/rooms">Lihat rooms</a>
+      <a class="btn ghost" href="/availability">Cek ketersediaan</a>
+    </div>
+  </section>
+  <aside class="card">
+    <h2>Kenapa daftar?</h2>
+    <div class="stat-list">
+      <p class="muted">Booking lebih cepat dan riwayat pemesanan tersimpan.</p>
+      <p class="muted">Akses pembayaran & invoice dalam satu tempat.</p>
+      <p class="muted">Notifikasi status booking lebih jelas.</p>
+    </div>
+  </aside>
+</div>
 {{end}}
 

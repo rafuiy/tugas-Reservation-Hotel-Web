@@ -33,9 +33,10 @@ func (r *InvoiceRepo) GetByBookingID(ctx context.Context, bookingID int64) (*mod
     RoomType      string         `db:"room_type"`
     RoomCapacity  int            `db:"room_capacity"`
     PricePerSlot  int64          `db:"price_per_slot"`
-    Date          string         `db:"date"`
-    TimeStart     string         `db:"time_start"`
-    TimeEnd       string         `db:"time_end"`
+    StartDate     string         `db:"start_date"`
+    EndDate       string         `db:"end_date"`
+    TotalDays     int            `db:"total_days"`
+    TotalAmount   int64          `db:"total_amount"`
     PaymentID     sql.NullInt64  `db:"payment_id"`
     PaymentStatus sql.NullString `db:"payment_status"`
     PaymentMethod sql.NullString `db:"payment_method"`
@@ -47,11 +48,11 @@ func (r *InvoiceRepo) GetByBookingID(ctx context.Context, bookingID int64) (*mod
   err := r.DB.GetContext(ctx, &rrow, `SELECT b.id AS booking_id, b.user_id, b.status AS booking_status,
            b.guest_name, b.guest_phone, b.notes,
            r.name AS room_name, r.room_no, r.type AS room_type, r.capacity AS room_capacity, r.price_per_slot,
-           a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end,
+           COALESCE(b.start_date::text, '') AS start_date, COALESCE(b.end_date::text, '') AS end_date,
+           COALESCE(b.total_days, 0) AS total_days, COALESCE(b.total_amount, 0) AS total_amount,
            p.id AS payment_id, p.status AS payment_status, p.method AS payment_method, p.amount AS payment_amount, p.paid_at
     FROM bookings b
     JOIN rooms r ON r.id = b.room_id
-    JOIN availability a ON a.id = b.availability_id
     LEFT JOIN payments p ON p.booking_id = b.id
     WHERE b.id = $1`, bookingID)
   if err == sql.ErrNoRows {
@@ -73,9 +74,10 @@ func (r *InvoiceRepo) GetByBookingID(ctx context.Context, bookingID int64) (*mod
     RoomType:      rrow.RoomType,
     RoomCapacity:  rrow.RoomCapacity,
     PricePerSlot:  rrow.PricePerSlot,
-    Date:          rrow.Date,
-    TimeStart:     rrow.TimeStart,
-    TimeEnd:       rrow.TimeEnd,
+    StartDate:     rrow.StartDate,
+    EndDate:       rrow.EndDate,
+    TotalDays:     rrow.TotalDays,
+    TotalAmount:   rrow.TotalAmount,
   }
   if rrow.PaymentID.Valid {
     inv.PaymentID = &rrow.PaymentID.Int64

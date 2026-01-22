@@ -1,14 +1,24 @@
 # Sistem Reservasi Hotel
 
-Project ini adalah aplikasi reservasi hotel sederhana berbasis Go (Gin) dengan UI server-rendered (html/template) dan API JSON. Tidak ada frontend terpisah.
+Aplikasi reservasi hotel sederhana berbasis Go (Gin) dengan UI server-rendered (html/template).
 
 ## Prasyarat
 - Go >= 1.22
-- Postgres lokal (tanpa Docker) atau Docker + Docker Compose
+- Postgres 18
 
-## Konfigurasi
-Salin `.env.example` menjadi `.env`, lalu sesuaikan nilainya.
+## Panduan Instalasi (copy-paste)
 
+1) Clone repo
+```bash
+git clone <URL_REPO_KAMU>
+cd <NAMA FOLDER KAMU>
+```
+
+2) Set env
+```bash
+copy .env.example .env
+```
+Edit `.env` sesuai kebutuhan. Contoh:
 ```
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/reservasi_hotel?sslmode=disable
 PORT=8080
@@ -17,81 +27,28 @@ ADMIN_SEED_EMAIL=admin@local.test
 ADMIN_SEED_PASSWORD=admin123
 ```
 
-## Menjalankan Database (Tanpa Docker)
+3) Buat database (pilih salah satu)
 
-Pastikan Postgres lokal berjalan dan `psql` tersedia di PATH.
-
-Buat database:
-
-```
+Via terminal (psql):
+```bash
 psql -U postgres -d postgres -c "CREATE DATABASE reservasi_hotel;"
 ```
 
-Jalankan migrasi:
+Atau via pgAdmin:
+- Create Database → nama: `reservasi_hotel`
 
-```
-psql -U postgres -d reservasi_hotel -f migrations/001_init.sql
-```
-
-## Menjalankan Database (Docker)
-
-```
-docker compose up -d
+4) Jalankan seeder
+```bash
+go run ./cmd/seed/main.go
 ```
 
-## Migrasi
-Jika menggunakan Docker, migrasi dijalankan via `psql` di container database:
-
-```
-docker compose exec db psql -U postgres -d reservasi_hotel -f /migrations/001_init.sql
+5) Jalankan aplikasi
+```bash
+go run ./cmd/server/main.go
 ```
 
-## Seed Admin
+Server berjalan di `http://localhost:8080` (atau sesuai `PORT`).
 
-```
-go run cmd/seed/main.go
-```
-
-Admin default (sesuai `.env`):
+## Akun Admin Default (sesuai .env)
 - Email: `admin@local.test`
 - Password: `admin123`
-
-## Menjalankan Server
-
-```
-go run cmd/server/main.go
-```
-
-Server akan berjalan di `http://localhost:8080` (atau sesuai `PORT`).
-
-## Flow Minimal (Ringkas)
-1) Register user (UI `/register` atau API `/api/auth/register`).
-2) Seed admin lalu login admin.
-3) Admin membuat room + availability.
-4) User membuat booking (status PENDING).
-5) Admin approve booking.
-6) User membuat payment dan menandai PAID.
-7) Invoice dapat diakses via `/invoice/:booking_id` atau API.
-
-## Catatan Ambiguitas
-- Amount payment di-set dari `price_per_slot` room pada saat create payment (server-side), jadi input amount dari user diabaikan demi konsistensi.
-- Status/enum memakai `CHECK constraint` di Postgres (tanpa tipe ENUM custom).
-
-## Menjalankan Test
-
-```
-go test ./...
-```
-
-## Contoh Curl (Opsional)
-
-```
-curl -X POST http://localhost:8080/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"name":"User A","email":"usera@test.local","password":"secret123","phone":"081234"}'
-
-curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"usera@test.local","password":"secret123"}'
-```
-

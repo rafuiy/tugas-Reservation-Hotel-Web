@@ -1,14 +1,27 @@
 {{define "content"}}
-<h1>Admin Payments</h1>
-<form method="get" action="/admin/payments" class="filters">
-  <select name="status">
-    <option value="">All</option>
-    <option value="UNPAID">UNPAID</option>
-    <option value="PAID">PAID</option>
-    <option value="FAILED">FAILED</option>
-  </select>
-  <button type="submit">Filter</button>
-</form>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Admin Payments</h1>
+    <p class="muted">Pantau status pembayaran dan pastikan transaksi selesai.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/admin/bookings">Kembali ke bookings</a>
+    <a class="btn primary" href="/admin/users">Next: Kelola users</a>
+  </div>
+</section>
+
+<section class="card">
+  <form method="get" action="/admin/payments" class="filters">
+    <select name="status">
+      <option value="">All</option>
+      <option value="UNPAID">UNPAID</option>
+      <option value="PAID">PAID</option>
+      <option value="FAILED">FAILED</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+</section>
 
 <table class="table">
   <thead>
@@ -19,6 +32,7 @@
       <th>Amount</th>
       <th>Method</th>
       <th>Status</th>
+      <th>Invoice</th>
     </tr>
   </thead>
   <tbody>
@@ -29,10 +43,11 @@
       <td>{{.UserID}}</td>
       <td>{{.Amount}}</td>
       <td>{{.Method}}</td>
-      <td>{{.Status}}</td>
+      <td><span class="pill">{{.Status}}</span></td>
+      <td><a href="/invoice/{{.BookingID}}">View</a></td>
     </tr>
     {{else}}
-    <tr><td colspan="6">No payments</td></tr>
+    <tr><td colspan="7">No payments</td></tr>
     {{end}}
   </tbody>
 </table>

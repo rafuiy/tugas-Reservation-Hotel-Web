@@ -9,10 +9,12 @@ import (
 )
 
 type bookingCreateRequest struct {
-  AvailabilityID int64  `json:"availability_id"`
-  GuestName      string `json:"guest_name"`
-  GuestPhone     string `json:"guest_phone"`
-  Notes          string `json:"notes"`
+  RoomID     int64  `json:"room_id"`
+  StartDate  string `json:"start_date"`
+  EndDate    string `json:"end_date"`
+  GuestName  string `json:"guest_name"`
+  GuestPhone string `json:"guest_phone"`
+  Notes      string `json:"notes"`
 }
 
 func (h *Handler) CreateBookingAPI(c *gin.Context) {
@@ -23,17 +25,19 @@ func (h *Handler) CreateBookingAPI(c *gin.Context) {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_request")
     return
   }
-  if req.AvailabilityID == 0 || req.GuestName == "" || req.GuestPhone == "" {
+  if req.RoomID == 0 || req.StartDate == "" || req.EndDate == "" || req.GuestName == "" || req.GuestPhone == "" {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_input")
     return
   }
 
   id, err := h.BookingService.Create(c.Request.Context(), service.BookingCreateInput{
-    UserID:         userID,
-    AvailabilityID: req.AvailabilityID,
-    GuestName:      req.GuestName,
-    GuestPhone:     req.GuestPhone,
-    Notes:          req.Notes,
+    UserID:     userID,
+    RoomID:     req.RoomID,
+    StartDate:  req.StartDate,
+    EndDate:    req.EndDate,
+    GuestName:  req.GuestName,
+    GuestPhone: req.GuestPhone,
+    Notes:      req.Notes,
   })
   if err != nil {
     if handled := handleBookingServiceErrorAPI(c, err); handled {

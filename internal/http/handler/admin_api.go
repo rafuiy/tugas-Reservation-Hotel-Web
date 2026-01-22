@@ -16,7 +16,10 @@ type adminRoomRequest struct {
   Name         string `json:"name"`
   Type         string `json:"type"`
   Capacity     int    `json:"capacity"`
+  BasePrice    int64  `json:"base_price"`
   PricePerSlot int64  `json:"price_per_slot"`
+  ImageURL     string `json:"image_url"`
+  Facilities   string `json:"facilities"`
   Status       string `json:"status"`
 }
 
@@ -51,7 +54,13 @@ func (h *Handler) AdminCreateRoomAPI(c *gin.Context) {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_request")
     return
   }
-  if req.RoomNo == "" || req.Name == "" || req.Type == "" || req.Capacity <= 0 || req.PricePerSlot < 0 || !util.ValidateRoomStatus(req.Status) {
+  basePrice := req.BasePrice
+  if basePrice == 0 && req.PricePerSlot > 0 {
+    basePrice = req.PricePerSlot
+  }
+  roomType := util.NormalizeRoomType(req.Type)
+  price, ok := util.ApplyRoomTypeMultiplier(basePrice, roomType)
+  if req.RoomNo == "" || req.Name == "" || roomType == "" || req.Capacity <= 0 || basePrice < 0 || !util.ValidateRoomStatus(req.Status) || !util.ValidateRoomType(roomType) || !ok {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_input")
     return
   }
@@ -59,9 +68,12 @@ func (h *Handler) AdminCreateRoomAPI(c *gin.Context) {
   id, err := h.Rooms.Create(c.Request.Context(), &model.Room{
     RoomNo:       req.RoomNo,
     Name:         req.Name,
-    Type:         req.Type,
+    Type:         roomType,
     Capacity:     req.Capacity,
-    PricePerSlot: req.PricePerSlot,
+    BasePrice:    basePrice,
+    PricePerSlot: price,
+    ImageURL:     req.ImageURL,
+    Facilities:   req.Facilities,
     Status:       req.Status,
   })
   if err != nil {
@@ -83,7 +95,13 @@ func (h *Handler) AdminUpdateRoomAPI(c *gin.Context) {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_request")
     return
   }
-  if req.RoomNo == "" || req.Name == "" || req.Type == "" || req.Capacity <= 0 || req.PricePerSlot < 0 || !util.ValidateRoomStatus(req.Status) {
+  basePrice := req.BasePrice
+  if basePrice == 0 && req.PricePerSlot > 0 {
+    basePrice = req.PricePerSlot
+  }
+  roomType := util.NormalizeRoomType(req.Type)
+  price, ok := util.ApplyRoomTypeMultiplier(basePrice, roomType)
+  if req.RoomNo == "" || req.Name == "" || roomType == "" || req.Capacity <= 0 || basePrice < 0 || !util.ValidateRoomStatus(req.Status) || !util.ValidateRoomType(roomType) || !ok {
     respondJSON(c, http.StatusBadRequest, nil, "invalid_input")
     return
   }
@@ -92,9 +110,12 @@ func (h *Handler) AdminUpdateRoomAPI(c *gin.Context) {
     ID:           id,
     RoomNo:       req.RoomNo,
     Name:         req.Name,
-    Type:         req.Type,
+    Type:         roomType,
     Capacity:     req.Capacity,
-    PricePerSlot: req.PricePerSlot,
+    BasePrice:    basePrice,
+    PricePerSlot: price,
+    ImageURL:     req.ImageURL,
+    Facilities:   req.Facilities,
     Status:       req.Status,
   }); err != nil {
     respondJSON(c, http.StatusInternalServerError, nil, "server_error")
@@ -117,7 +138,6 @@ func (h *Handler) AdminDeleteRoomAPI(c *gin.Context) {
 }
 
 func (h *Handler) AdminAvailabilityAPI(c *gin.Context) {
-  date := c.Query("date")
   var roomIDPtr *int64
   if roomParam := c.Query("room_id"); roomParam != "" {
     if id, err := parseID(roomParam); err == nil {
@@ -125,7 +145,7 @@ func (h *Handler) AdminAvailabilityAPI(c *gin.Context) {
     }
   }
 
-  rows, err := h.Availability.List(c.Request.Context(), date, roomIDPtr, false)
+  rows, err := h.Bookings.ListSchedule(c.Request.Context(), roomIDPtr)
   if err != nil {
     respondJSON(c, http.StatusInternalServerError, nil, "server_error")
     return

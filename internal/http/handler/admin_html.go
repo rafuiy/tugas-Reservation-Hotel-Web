@@ -25,18 +25,27 @@ func (h *Handler) AdminRoomsPage(c *gin.Context) {
 
 func (h *Handler) AdminCreateRoom(c *gin.Context) {
   capacity, _ := strconv.Atoi(c.PostForm("capacity"))
-  price, _ := strconv.ParseInt(c.PostForm("price_per_slot"), 10, 64)
+  basePrice, _ := strconv.ParseInt(c.PostForm("base_price"), 10, 64)
+  roomType := util.NormalizeRoomType(c.PostForm("type"))
+  price, ok := util.ApplyRoomTypeMultiplier(basePrice, roomType)
+  if !ok {
+    c.Redirect(http.StatusFound, "/admin/rooms?err=invalid_input")
+    return
+  }
 
   room := &model.Room{
     RoomNo:       c.PostForm("room_no"),
     Name:         c.PostForm("name"),
-    Type:         c.PostForm("type"),
+    Type:         roomType,
     Capacity:     capacity,
+    BasePrice:    basePrice,
     PricePerSlot: price,
+    ImageURL:     c.PostForm("image_url"),
+    Facilities:   c.PostForm("facilities"),
     Status:       c.PostForm("status"),
   }
 
-  if room.RoomNo == "" || room.Name == "" || room.Type == "" || room.Capacity <= 0 || room.PricePerSlot < 0 || !util.ValidateRoomStatus(room.Status) {
+  if room.RoomNo == "" || room.Name == "" || room.Type == "" || room.Capacity <= 0 || room.BasePrice < 0 || !util.ValidateRoomStatus(room.Status) || !util.ValidateRoomType(room.Type) {
     c.Redirect(http.StatusFound, "/admin/rooms?err=invalid_input")
     return
   }
@@ -55,19 +64,28 @@ func (h *Handler) AdminUpdateRoom(c *gin.Context) {
     return
   }
   capacity, _ := strconv.Atoi(c.PostForm("capacity"))
-  price, _ := strconv.ParseInt(c.PostForm("price_per_slot"), 10, 64)
+  basePrice, _ := strconv.ParseInt(c.PostForm("base_price"), 10, 64)
+  roomType := util.NormalizeRoomType(c.PostForm("type"))
+  price, ok := util.ApplyRoomTypeMultiplier(basePrice, roomType)
+  if !ok {
+    c.Redirect(http.StatusFound, "/admin/rooms?err=invalid_input")
+    return
+  }
 
   room := &model.Room{
     ID:           id,
     RoomNo:       c.PostForm("room_no"),
     Name:         c.PostForm("name"),
-    Type:         c.PostForm("type"),
+    Type:         roomType,
     Capacity:     capacity,
+    BasePrice:    basePrice,
     PricePerSlot: price,
+    ImageURL:     c.PostForm("image_url"),
+    Facilities:   c.PostForm("facilities"),
     Status:       c.PostForm("status"),
   }
 
-  if room.RoomNo == "" || room.Name == "" || room.Type == "" || room.Capacity <= 0 || room.PricePerSlot < 0 || !util.ValidateRoomStatus(room.Status) {
+  if room.RoomNo == "" || room.Name == "" || room.Type == "" || room.Capacity <= 0 || room.BasePrice < 0 || !util.ValidateRoomStatus(room.Status) || !util.ValidateRoomType(room.Type) {
     c.Redirect(http.StatusFound, "/admin/rooms?err=invalid_input")
     return
   }
@@ -93,7 +111,6 @@ func (h *Handler) AdminDeleteRoom(c *gin.Context) {
 }
 
 func (h *Handler) AdminAvailabilityPage(c *gin.Context) {
-  date := c.Query("date")
   var roomIDPtr *int64
   if roomParam := c.Query("room_id"); roomParam != "" {
     if id, err := parseID(roomParam); err == nil {
@@ -101,7 +118,7 @@ func (h *Handler) AdminAvailabilityPage(c *gin.Context) {
     }
   }
 
-  rows, err := h.Availability.List(c.Request.Context(), date, roomIDPtr, false)
+  rows, err := h.Bookings.ListSchedule(c.Request.Context(), roomIDPtr)
   if err != nil {
     c.Redirect(http.StatusFound, "/admin/availability?err=server_error")
     return
@@ -109,10 +126,15 @@ func (h *Handler) AdminAvailabilityPage(c *gin.Context) {
   rooms, _ := h.Rooms.ListAll(c.Request.Context())
 
   h.render(c, "Admin Availability", "admin_availability", gin.H{
-    "Availability": rows,
+    "Booked":       rows,
     "Rooms":        rooms,
-    "FilterDate":   date,
     "FilterRoomID": roomIDPtr,
+    "FilterRoomIDValue": func() int64 {
+      if roomIDPtr == nil {
+        return 0
+      }
+      return *roomIDPtr
+    }(),
   })
 }
 
@@ -201,7 +223,12 @@ func (h *Handler) AdminBookingsPage(c *gin.Context) {
   status := c.Query("status")
   rows, err := h.Bookings.ListAdmin(c.Request.Context(), status)
   if err != nil {
-    c.Redirect(http.StatusFound, "/admin/bookings?err=server_error")
+    h.setDebugErrorHeader(c, err)
+    h.render(c, "Admin Bookings", "admin_bookings", gin.H{
+      "Bookings": []interface{}{},
+      "Status":   status,
+      "Error":    "server_error",
+    })
     return
   }
   h.render(c, "Admin Bookings", "admin_bookings", gin.H{

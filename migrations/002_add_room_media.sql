@@ -1,0 +1,3 @@
+ALTER TABLE rooms
+  ADD COLUMN IF NOT EXISTS image_url TEXT,
+  ADD COLUMN IF NOT EXISTS facilities TEXT;

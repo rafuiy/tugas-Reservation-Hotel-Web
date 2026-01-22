@@ -1,30 +1,68 @@
 {{define "content"}}
-<h1>Rooms</h1>
-<table class="table">
-  <thead>
-    <tr>
-      <th>Room No</th>
-      <th>Name</th>
-      <th>Type</th>
-      <th>Capacity</th>
-      <th>Price Per Slot</th>
-      <th>Status</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{range .Rooms}}
-    <tr>
-      <td>{{.RoomNo}}</td>
-      <td>{{.Name}}</td>
-      <td>{{.Type}}</td>
-      <td>{{.Capacity}}</td>
-      <td>{{.PricePerSlot}}</td>
-      <td>{{.Status}}</td>
-    </tr>
-    {{else}}
-    <tr><td colspan="6">No rooms</td></tr>
-    {{end}}
-  </tbody>
-</table>
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Hotel Reservasi</p>
+    <h1>Temukan ruangan ideal untuk acara Anda</h1>
+    <p class="muted">Lihat detail ruangan, bandingkan kapasitas & harga, lalu lanjut cek ketersediaan.</p>
+    <div class="flow-actions">
+      <a class="btn primary" href="/availability">Next: Cek ketersediaan</a>
+      {{if eq .Role "USER"}}
+        <a class="btn ghost" href="/bookings/my">Lihat booking saya</a>
+      {{else}}
+        <a class="btn outline" href="/login">Login untuk booking</a>
+      {{end}}
+    </div>
+  </div>
+  <div class="hero-card card">
+    <h2>Pengalaman Pemesanan</h2>
+    <p class="muted">Eksplor room, cek jadwal, lalu booking dengan cepat tanpa banyak klik.</p>
+    <div class="flow-actions">
+      <a class="btn outline" href="/availability">Cek jadwal hari ini</a>
+      <a class="btn ghost" href="/register">Buat akun</a>
+    </div>
+  </div>
+</section>
+
+<section class="room-grid">
+  {{range .Rooms}}
+  <article class="room-card">
+    <div class="room-splash">
+      {{if .ImageURL}}
+        <img src="{{.ImageURL}}" alt="{{.Name}}">
+      {{else}}
+        <div class="room-splash-fallback"></div>
+      {{end}}
+    </div>
+    <div class="room-header">
+      <div>
+        <h3>{{.Name}}</h3>
+        <p class="muted">Room {{.RoomNo}} • {{.Type}}</p>
+      </div>
+      <span class="pill">{{.Status}}</span>
+    </div>
+    <div class="room-meta">
+      <span>Kapasitas {{.Capacity}} orang</span>
+      <span>Harga/hari {{.PricePerSlot}}</span>
+    </div>
+    <details>
+      <summary>Detail ruangan</summary>
+      <div class="details-body">
+        <p class="muted">Cocok untuk meeting, workshop, atau acara privat dengan suasana nyaman.</p>
+        <div class="flow-actions">
+          <a class="btn primary" href="/rooms/{{.ID}}">Lihat detail</a>
+          <a class="btn outline" href="/availability?room_id={{.ID}}">Lihat jadwal</a>
+          {{if eq $.Role "USER"}}
+            <a class="btn ghost" href="/bookings/my">Booking saya</a>
+          {{else}}
+            <a class="btn ghost" href="/login">Login untuk booking</a>
+          {{end}}
+        </div>
+      </div>
+    </details>
+  </article>
+  {{else}}
+  <div class="card">Belum ada ruangan tersedia.</div>
+  {{end}}
+</section>
 {{end}}
 

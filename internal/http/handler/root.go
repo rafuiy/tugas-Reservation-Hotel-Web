@@ -1,23 +1,14 @@
 package handler
 
 import (
-  "net/http"
-
   "github.com/gin-gonic/gin"
-
-  "project_ap3/internal/http/middleware"
 )
 
 func (h *Handler) Root(c *gin.Context) {
-  roleVal, ok := c.Get(middleware.CtxRole)
-  if !ok || roleVal == nil {
-    c.Redirect(http.StatusFound, "/login")
-    return
+  rooms, err := h.Rooms.ListActive(c.Request.Context())
+  if err != nil {
+    rooms = nil
   }
-  if roleVal.(string) == "ADMIN" {
-    c.Redirect(http.StatusFound, "/admin")
-    return
-  }
-  c.Redirect(http.StatusFound, "/rooms")
+  h.render(c, "Home", "landing", gin.H{"Rooms": rooms})
 }
 

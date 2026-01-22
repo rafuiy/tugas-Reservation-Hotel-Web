@@ -1,15 +1,28 @@
 {{define "content"}}
-<h1>Admin Bookings</h1>
-<form method="get" action="/admin/bookings" class="filters">
-  <select name="status">
-    <option value="">All</option>
-    <option value="PENDING">PENDING</option>
-    <option value="APPROVED">APPROVED</option>
-    <option value="REJECTED">REJECTED</option>
-    <option value="CANCELLED">CANCELLED</option>
-  </select>
-  <button type="submit">Filter</button>
-</form>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Admin Bookings</h1>
+    <p class="muted">Review booking, approve atau reject permintaan.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/admin/rooms">Kembali ke rooms</a>
+    <a class="btn primary" href="/admin/payments">Next: Pantau pembayaran</a>
+  </div>
+</section>
+
+<section class="card">
+  <form method="get" action="/admin/bookings" class="filters">
+    <select name="status">
+      <option value="">All</option>
+      <option value="PENDING">PENDING</option>
+      <option value="APPROVED">APPROVED</option>
+      <option value="REJECTED">REJECTED</option>
+      <option value="CANCELLED">CANCELLED</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+</section>
 
 <table class="table">
   <thead>
@@ -17,7 +30,10 @@
       <th>ID</th>
       <th>User</th>
       <th>Room</th>
-      <th>Date</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Days</th>
+      <th>Total</th>
       <th>Status</th>
       <th>Actions</th>
     </tr>
@@ -28,19 +44,25 @@
       <td>{{.ID}}</td>
       <td>{{.UserID}}</td>
       <td>{{.RoomNo}} - {{.RoomName}}</td>
-      <td>{{.Date}}</td>
-      <td>{{.Status}}</td>
+      <td>{{.StartDate}}</td>
+      <td>{{.EndDate}}</td>
+      <td>{{.TotalDays}}</td>
+      <td>{{.TotalAmount}}</td>
+      <td><span class="pill">{{.Status}}</span></td>
       <td>
+        {{if eq .Status "PENDING"}}
         <form method="post" action="/admin/bookings/{{.ID}}/approve" class="inline">
           <button type="submit">Approve</button>
         </form>
         <form method="post" action="/admin/bookings/{{.ID}}/reject" class="inline">
           <button type="submit" class="danger">Reject</button>
         </form>
+        {{else}}-
+        {{end}}
       </td>
     </tr>
     {{else}}
-    <tr><td colspan="6">No bookings</td></tr>
+    <tr><td colspan="9">No bookings</td></tr>
     {{end}}
   </tbody>
 </table>

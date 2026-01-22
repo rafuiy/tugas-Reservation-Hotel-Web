@@ -1,0 +1,103 @@
+{{define "content"}}
+<section class="hero">
+  <div class="hero-copy">
+    <p class="eyebrow">Hotel Reservasi</p>
+    <h1>Pesan ruangan hotel dengan cepat dan nyaman</h1>
+    <p class="muted">Jelajahi ruangan, cek ketersediaan, lalu booking dalam beberapa langkah sederhana.</p>
+    <div class="flow-actions">
+      <a class="btn primary" href="/rooms">Lihat daftar rooms</a>
+      <a class="btn outline" href="/availability">Cek ketersediaan</a>
+      <a class="btn ghost" href="/login">Login</a>
+    </div>
+  </div>
+  <div class="hero-card card">
+    <h2>Kenapa pilih kami</h2>
+    <div class="stat-list">
+      <p class="muted">Tampilan bersih dan mudah dibaca.</p>
+      <p class="muted">Alur booking ringkas tanpa banyak klik.</p>
+      <p class="muted">Status booking dan pembayaran jelas.</p>
+    </div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Rooms Populer</p>
+      <h2>Rekomendasi ruangan</h2>
+      <p class="muted">Lihat beberapa ruangan yang tersedia untuk booking.</p>
+    </div>
+    <div class="flow-actions">
+      <a class="btn outline" href="/rooms">Lihat semua rooms</a>
+    </div>
+  </div>
+</section>
+
+<section class="room-grid">
+  {{range $index, $room := .Rooms}}
+  {{if lt $index 3}}
+  <article class="room-card">
+    <div class="room-splash">
+      {{if $room.ImageURL}}
+        <img src="{{$room.ImageURL}}" alt="{{$room.Name}}">
+      {{else}}
+        <div class="room-splash-fallback"></div>
+      {{end}}
+    </div>
+    <div class="room-header">
+      <div>
+        <h3>{{$room.Name}}</h3>
+        <p class="muted">Room {{$room.RoomNo}} • {{$room.Type}}</p>
+      </div>
+      <span class="pill">{{$room.Status}}</span>
+    </div>
+    <div class="room-meta">
+      <span>Kapasitas {{$room.Capacity}} orang</span>
+      <span>Harga/hari {{$room.PricePerSlot}}</span>
+    </div>
+    <div class="flow-actions">
+      <a class="btn primary" href="/rooms/{{$room.ID}}">Detail</a>
+      <a class="btn outline" href="/availability?room_id={{$room.ID}}">Cek jadwal</a>
+    </div>
+  </article>
+  {{end}}
+  {{else}}
+  <div class="card">Belum ada ruangan tersedia.</div>
+  {{end}}
+</section>
+
+<section class="split-section">
+  <div class="card">
+    <p class="eyebrow">FAQ</p>
+    <h2>Pertanyaan umum</h2>
+    <div class="faq-list">
+      <details>
+        <summary>Bagaimana cara booking ruangan?</summary>
+        <p class="muted">Pilih ruangan, cek availability, lalu login untuk booking.</p>
+      </details>
+      <details>
+        <summary>Apakah bisa reschedule?</summary>
+        <p class="muted">Silakan hubungi admin untuk perubahan jadwal.</p>
+      </details>
+      <details>
+        <summary>Metode pembayaran apa yang tersedia?</summary>
+        <p class="muted">Saat ini tersedia transfer atau cash sesuai instruksi admin.</p>
+      </details>
+    </div>
+  </div>
+  <div class="card">
+    <p class="eyebrow">Review</p>
+    <h2>Apa kata mereka</h2>
+    <div class="review-grid">
+      <div class="review-card">
+        <p class="muted">“Ruangan bersih, proses booking cepat, dan staff sangat membantu.”</p>
+        <strong>- Rani, Jakarta</strong>
+      </div>
+      <div class="review-card">
+        <p class="muted">“Sangat cocok untuk meeting kantor. Sistemnya jelas dan mudah.”</p>
+        <strong>- Bimo, Bandung</strong>
+      </div>
+    </div>
+  </div>
+</section>
+{{end}}

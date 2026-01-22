@@ -7,4 +7,5 @@ var (
   ErrConflict  = errors.New("conflict")
   ErrForbidden = errors.New("forbidden")
   ErrInvalid   = errors.New("invalid")
+  ErrAmountMismatch = errors.New("amount mismatch")
 )

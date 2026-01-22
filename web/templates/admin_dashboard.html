@@ -1,7 +1,24 @@
 {{define "content"}}
-<h1>Admin Dashboard</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Admin</p>
+    <h1>Dashboard Admin</h1>
+    <p class="muted">Kelola ruangan, availability, booking, pembayaran, dan user dengan cepat.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn primary" href="/admin/rooms">Next: Kelola rooms</a>
+    <a class="btn ghost" href="/admin/bookings">Cek booking</a>
+  </div>
+</section>
+
 <div class="card">
-  <p>Use the menu to manage rooms, availability, bookings, payments, and users.</p>
+  <h2>Quick Actions</h2>
+  <div class="flow-actions">
+    <a class="btn outline" href="/admin/rooms">Rooms</a>
+    <a class="btn outline" href="/admin/bookings">Bookings</a>
+    <a class="btn outline" href="/admin/payments">Payments</a>
+    <a class="btn outline" href="/admin/users">Users</a>
+  </div>
 </div>
 {{end}}
 

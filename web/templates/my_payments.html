@@ -1,14 +1,60 @@
 {{define "content"}}
-<h1>My Payments</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Pembayaran</p>
+    <h1>My Payments</h1>
+    <p class="muted">Lakukan pembayaran dan cek status transaksi.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/bookings/my">Kembali ke booking</a>
+    <a class="btn ghost" href="/rooms">Buat booking baru</a>
+  </div>
+</section>
 
 <section class="card">
-  <h2>Create Payment</h2>
-  <form method="post" action="/payments" class="inline">
-    <input type="number" name="booking_id" placeholder="Booking ID" required>
-    <input type="text" name="method" placeholder="Method (TRANSFER/CASH)" required>
-    <button type="submit">Create</button>
-  </form>
-  <p class="muted">Booking yang status APPROVED dapat dibayar.</p>
+  <h2>Pilih booking yang akan dibayar</h2>
+  <p class="muted">Hanya booking dengan status APPROVED yang bisa dibayar.</p>
+  <div class="booking-list">
+    {{range .Bookings}}
+      {{ $pay := index $.PaymentByBooking .ID }}
+      {{ $payStatus := index $.PaymentStatusByBooking .ID }}
+      <label class="booking-item {{if or (ne .Status "APPROVED") (eq $payStatus "PAID")}}disabled{{end}}">
+        <input type="checkbox"
+               name="booking_pick"
+               value="{{.ID}}"
+               data-room="{{.RoomName}}"
+               data-roomno="{{.RoomNo}}"
+               data-start="{{.StartDate}}"
+               data-end="{{.EndDate}}"
+               data-days="{{.TotalDays}}"
+               data-price="{{.TotalAmount}}"
+               {{if or (ne .Status "APPROVED") (eq $payStatus "PAID")}}disabled{{end}}>
+        <div class="booking-thumb">
+          {{if .RoomImage}}
+            <img src="{{.RoomImage}}" alt="{{.RoomName}}">
+          {{else}}
+            <div class="room-splash-fallback"></div>
+          {{end}}
+        </div>
+        <div class="booking-info">
+          <strong>#{{.ID}} • {{.RoomName}}</strong>
+          <div class="muted">Room {{.RoomNo}} • {{.StartDate}} - {{.EndDate}} ({{.TotalDays}} hari)</div>
+          <div class="muted">Total: {{.TotalAmount}}</div>
+        </div>
+        <div class="booking-status">
+          <span class="pill">{{.Status}}</span>
+          {{if $pay}}
+            <span class="pill {{if eq $pay.Status "PAID"}}success{{end}}">{{$pay.Status}}</span>
+          {{end}}
+        </div>
+      </label>
+    {{else}}
+      <div class="muted">Belum ada booking.</div>
+    {{end}}
+  </div>
+  <div class="flow-actions">
+    <button type="button" id="payNowBtn">Bayar sekarang</button>
+  </div>
 </section>
 
 <table class="table">
@@ -16,10 +62,12 @@
     <tr>
       <th>ID</th>
       <th>Booking</th>
+      <th>Room</th>
+      <th>Dates</th>
       <th>Amount</th>
       <th>Method</th>
       <th>Status</th>
-      <th>Action</th>
+      <th>Invoice</th>
     </tr>
   </thead>
   <tbody>
@@ -27,48 +75,140 @@
     <tr>
       <td>{{.ID}}</td>
       <td>{{.BookingID}}</td>
+      <td>{{.RoomNo}} - {{.RoomName}}</td>
+      <td>{{.StartDate}} - {{.EndDate}} ({{.TotalDays}} hari)</td>
       <td>{{.Amount}}</td>
       <td>{{.Method}}</td>
-      <td>{{.Status}}</td>
+      <td><span class="pill">{{.Status}}</span></td>
       <td>
-        {{if ne .Status "PAID"}}
-        <form method="post" action="/payments/{{.ID}}/pay" class="inline">
-          <button type="submit">Mark Paid</button>
-        </form>
+        {{if eq .Status "PAID"}}
+          <a href="/invoice/{{.BookingID}}">Lihat invoice</a>
         {{else}}-
         {{end}}
       </td>
     </tr>
     {{else}}
-    <tr><td colspan="6">No payments</td></tr>
+    <tr><td colspan="8">No payments</td></tr>
     {{end}}
   </tbody>
 </table>
 
-<section class="card">
-  <h2>My Bookings (Reference)</h2>
-  <table class="table">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Status</th>
-        <th>Room</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-    <tbody>
-      {{range .Bookings}}
-      <tr>
-        <td>{{.ID}}</td>
-        <td>{{.Status}}</td>
-        <td>{{.RoomNo}} - {{.RoomName}}</td>
-        <td>{{.Date}}</td>
-      </tr>
-      {{else}}
-      <tr><td colspan="4">No bookings</td></tr>
-      {{end}}
-    </tbody>
-  </table>
-</section>
+<dialog id="payModal" class="modal">
+  <form method="post" action="/payments" class="modal-body" id="payForm">
+    <h2>Konfirmasi pembayaran</h2>
+    <input type="hidden" name="booking_id" id="payBookingId">
+    <div class="modal-detail">
+      <div><strong>Room:</strong> <span id="payRoom"></span></div>
+      <div><strong>Mulai:</strong> <span id="payStart"></span></div>
+      <div><strong>Selesai:</strong> <span id="payEnd"></span></div>
+      <div><strong>Durasi:</strong> <span id="payDays"></span> hari</div>
+      <div><strong>Total:</strong> <span id="payPrice"></span></div>
+    </div>
+    <label>Metode pembayaran
+      <select name="method" id="payMethod" required>
+        <option value="CASH">CASH</option>
+        <option value="TRANSFER">TRANSFER</option>
+      </select>
+    </label>
+    <label id="amountWrap">Jumlah transfer
+      <input type="number" name="amount" id="payAmount" min="0" step="1" placeholder="Masukkan jumlah sesuai total">
+    </label>
+    <p class="muted" id="amountHint">Untuk transfer, jumlah harus sama dengan total.</p>
+    <div class="flow-actions">
+      <button type="submit">Bayar sekarang</button>
+      <button type="button" class="btn ghost" id="payClose">Batal</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  (function () {
+    const payNowBtn = document.getElementById("payNowBtn");
+    const modal = document.getElementById("payModal");
+    const payClose = document.getElementById("payClose");
+    const bookingInputs = Array.from(document.querySelectorAll('input[name="booking_pick"]'));
+    const payBookingId = document.getElementById("payBookingId");
+    const payRoom = document.getElementById("payRoom");
+    const payStart = document.getElementById("payStart");
+    const payEnd = document.getElementById("payEnd");
+    const payDays = document.getElementById("payDays");
+    const payPrice = document.getElementById("payPrice");
+    const payMethod = document.getElementById("payMethod");
+    const amountWrap = document.getElementById("amountWrap");
+    const amountHint = document.getElementById("amountHint");
+    const payAmount = document.getElementById("payAmount");
+
+    function selectedBooking() {
+      return bookingInputs.find((input) => input.checked);
+    }
+
+    bookingInputs.forEach((input) => {
+      input.addEventListener("change", () => {
+        if (input.checked) {
+          bookingInputs.forEach((other) => {
+            if (other !== input) {
+              other.checked = false;
+              const otherLabel = other.closest(".booking-item");
+              if (otherLabel) {
+                otherLabel.classList.remove("selected");
+              }
+            }
+          });
+          const label = input.closest(".booking-item");
+          if (label) {
+            label.classList.add("selected");
+          }
+        } else {
+          const label = input.closest(".booking-item");
+          if (label) {
+            label.classList.remove("selected");
+          }
+        }
+      });
+    });
+
+    function toggleAmountField() {
+      const method = payMethod.value;
+      const isTransfer = method === "TRANSFER";
+      amountWrap.style.display = isTransfer ? "flex" : "none";
+      amountHint.style.display = isTransfer ? "block" : "none";
+      payAmount.required = isTransfer;
+      if (!isTransfer) {
+        payAmount.value = "";
+      }
+    }
+
+    payMethod.addEventListener("change", toggleAmountField);
+
+    payNowBtn.addEventListener("click", () => {
+      const selected = selectedBooking();
+      if (!selected) {
+        alert("Pilih satu booking terlebih dahulu.");
+        return;
+      }
+      payBookingId.value = selected.value;
+      payRoom.textContent = selected.dataset.room + " (Room " + selected.dataset.roomno + ")";
+      payStart.textContent = selected.dataset.start;
+      payEnd.textContent = selected.dataset.end;
+      payDays.textContent = selected.dataset.days;
+      payPrice.textContent = selected.dataset.price;
+      payAmount.value = selected.dataset.price;
+      toggleAmountField();
+      if (typeof modal.showModal === "function") {
+        modal.showModal();
+      } else {
+        modal.style.display = "block";
+      }
+    });
+
+    payClose.addEventListener("click", () => {
+      if (typeof modal.close === "function") {
+        modal.close();
+      } else {
+        modal.style.display = "none";
+      }
+    });
+  })();
+</script>
 {{end}}
 

@@ -1,0 +1,90 @@
+{{define "content"}}
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Detail Ruangan</p>
+    <h1>{{.Room.Name}}</h1>
+    <p class="muted">Room {{.Room.RoomNo}} - {{.Room.Type}} - Kapasitas {{.Room.Capacity}} orang</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/rooms">Kembali ke daftar rooms</a>
+    <a class="btn ghost" href="/availability?room_id={{.Room.ID}}">Lihat availability</a>
+  </div>
+</section>
+
+<section class="card">
+  <div class="room-splash detail">
+    {{if .Room.ImageURL}}
+      <img src="{{.Room.ImageURL}}" alt="{{.Room.Name}}">
+    {{else}}
+      <div class="room-splash-fallback"></div>
+    {{end}}
+  </div>
+  <div class="room-meta">
+    <span>Harga per hari: {{.Room.PricePerSlot}}</span>
+    <span>Status: <span class="pill">{{.Room.Status}}</span></span>
+  </div>
+  <p class="muted">Ruangan ini cocok untuk meeting, workshop, atau acara privat dengan suasana yang nyaman.</p>
+</section>
+
+<section class="card">
+  <h2>Fasilitas</h2>
+  {{if .Facilities}}
+  <ul class="facility-list">
+    {{range .Facilities}}
+      <li>{{.}}</li>
+    {{end}}
+  </ul>
+  {{else}}
+    <p class="muted">Belum ada fasilitas yang ditambahkan.</p>
+  {{end}}
+</section>
+
+<section class="card">
+  <div class="page-header">
+    <div>
+      <p class="eyebrow">Booking</p>
+      <h2>Booking Ruangan</h2>
+      <p class="muted">Pilih rentang tanggal untuk booking.</p>
+    </div>
+  </div>
+  {{if eq .Role "USER"}}
+  <form method="post" action="/bookings" class="grid">
+    <input type="hidden" name="room_id" value="{{.Room.ID}}">
+    <input type="date" name="start_date" value="{{.StartDate}}" required>
+    <input type="date" name="end_date" value="{{.EndDate}}" required>
+    <input type="text" name="guest_name" placeholder="Guest name" required>
+    <input type="text" name="guest_phone" placeholder="Guest phone" required>
+    <input type="text" name="notes" placeholder="Notes">
+    <button type="submit">Book</button>
+  </form>
+  {{else}}
+    <a class="btn primary" href="/login">Login untuk booking</a>
+  {{end}}
+</section>
+
+<section class="card">
+  <h2>Jadwal yang sudah dibooking</h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Days</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range .Booked}}
+      <tr>
+        <td>{{.StartDate}}</td>
+        <td>{{.EndDate}}</td>
+        <td>{{.TotalDays}}</td>
+        <td><span class="pill">{{.Status}}</span></td>
+      </tr>
+      {{else}}
+      <tr><td colspan="4">Belum ada booking.</td></tr>
+      {{end}}
+    </tbody>
+  </table>
+</section>
+{{end}}

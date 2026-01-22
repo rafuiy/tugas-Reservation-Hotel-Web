@@ -1,12 +1,25 @@
 {{define "content"}}
-<h1>My Bookings</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Booking</p>
+    <h1>My Bookings</h1>
+    <p class="muted">Cek status booking dan lanjutkan ke pembayaran.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/availability">Kembali ke ketersediaan</a>
+    <a class="btn primary" href="/payments/my">Next: Pembayaran</a>
+  </div>
+</section>
+
 <table class="table">
   <thead>
     <tr>
       <th>ID</th>
       <th>Room</th>
-      <th>Date</th>
-      <th>Time</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Days</th>
+      <th>Total</th>
       <th>Status</th>
       <th>Invoice</th>
     </tr>
@@ -16,13 +29,15 @@
     <tr>
       <td>{{.ID}}</td>
       <td>{{.RoomNo}} - {{.RoomName}}</td>
-      <td>{{.Date}}</td>
-      <td>{{.TimeStart}} - {{.TimeEnd}}</td>
-      <td>{{.Status}}</td>
+      <td>{{.StartDate}}</td>
+      <td>{{.EndDate}}</td>
+      <td>{{.TotalDays}}</td>
+      <td>{{.TotalAmount}}</td>
+      <td><span class="pill">{{.Status}}</span></td>
       <td><a href="/invoice/{{.ID}}">View</a></td>
     </tr>
     {{else}}
-    <tr><td colspan="6">No bookings</td></tr>
+    <tr><td colspan="8">No bookings</td></tr>
     {{end}}
   </tbody>
 </table>

@@ -19,6 +19,8 @@ type AvailabilityView struct {
   TimeStart    string    `db:"time_start" json:"time_start"`
   TimeEnd      string    `db:"time_end" json:"time_end"`
   IsOpen       bool      `db:"is_open" json:"is_open"`
+  IsBooked     bool      `db:"is_booked" json:"is_booked"`
+  BookingStatus string   `db:"booking_status" json:"booking_status"`
   CreatedAt    time.Time `db:"created_at" json:"created_at"`
   RoomName     string    `db:"room_name" json:"room_name"`
   RoomNo       string    `db:"room_no" json:"room_no"`

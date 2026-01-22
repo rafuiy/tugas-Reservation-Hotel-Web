@@ -59,6 +59,12 @@ func (h *Handler) render(c *gin.Context, title, contentTemplate string, data gin
   if role, ok := c.Get(middleware.CtxRole); ok {
     data["Role"] = role
   }
+  if errMsg, ok := data["Error"].(string); ok {
+    switch errMsg {
+    case "conflict":
+      data["Error"] = "Jadwal tersebut sudah ter booked."
+    }
+  }
 
   tmpl, err := template.New("").ParseFS(
     web.FS,

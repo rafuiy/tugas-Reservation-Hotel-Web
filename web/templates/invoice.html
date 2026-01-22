@@ -1,13 +1,26 @@
 {{define "content"}}
-<h1>Invoice</h1>
+<section class="page-header">
+  <div>
+    <p class="eyebrow">Ringkasan</p>
+    <h1>Invoice</h1>
+    <p class="muted">Detail booking dan status pembayaran.</p>
+  </div>
+  <div class="flow-actions">
+    <a class="btn outline" href="/bookings/my">Kembali ke booking</a>
+    <a class="btn primary" href="/payments/my">Next: Pembayaran</a>
+  </div>
+</section>
+
 <div class="card">
   <p><strong>Booking ID:</strong> {{.Invoice.BookingID}}</p>
   <p><strong>Status:</strong> {{.Invoice.BookingStatus}}</p>
   <p><strong>Guest:</strong> {{.Invoice.GuestName}} ({{.Invoice.GuestPhone}})</p>
   <p><strong>Room:</strong> {{.Invoice.RoomNo}} - {{.Invoice.RoomName}}</p>
-  <p><strong>Date:</strong> {{.Invoice.Date}}</p>
-  <p><strong>Time:</strong> {{.Invoice.TimeStart}} - {{.Invoice.TimeEnd}}</p>
-  <p><strong>Price Per Slot:</strong> {{.Invoice.PricePerSlot}}</p>
+  <p><strong>Start Date:</strong> {{.Invoice.StartDate}}</p>
+  <p><strong>End Date:</strong> {{.Invoice.EndDate}}</p>
+  <p><strong>Total Days:</strong> {{.Invoice.TotalDays}}</p>
+  <p><strong>Price Per Day:</strong> {{.Invoice.PricePerSlot}}</p>
+  <p><strong>Total Amount:</strong> {{.Invoice.TotalAmount}}</p>
   <hr>
   <p><strong>Payment Status:</strong> {{if .Invoice.PaymentStatus}}{{.Invoice.PaymentStatus}}{{else}}UNPAID{{end}}</p>
   <p><strong>Payment Method:</strong> {{if .Invoice.PaymentMethod}}{{.Invoice.PaymentMethod}}{{else}}-{{end}}</p>

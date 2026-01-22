@@ -69,10 +69,11 @@ func (r *AvailabilityRepo) List(ctx context.Context, date string, roomID *int64,
   defer cancel()
 
   base := `SELECT a.id, a.room_id, a.date::text AS date, to_char(a.time_start,'HH24:MI') AS time_start, to_char(a.time_end,'HH24:MI') AS time_end,
-                  a.is_open, a.created_at,
+                  a.is_open, CASE WHEN b.id IS NULL THEN FALSE ELSE TRUE END AS is_booked, COALESCE(b.status, '') AS booking_status, a.created_at,
                   r.name AS room_name, r.room_no, r.type AS room_type, r.capacity AS room_capacity, r.price_per_slot AS room_price, r.status AS room_status
            FROM availability a
-           JOIN rooms r ON r.id = a.room_id`
+           JOIN rooms r ON r.id = a.room_id
+           LEFT JOIN bookings b ON b.availability_id = a.id`
 
   query := base + " WHERE 1=1"
   args := []interface{}{}

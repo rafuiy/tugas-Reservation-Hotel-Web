@@ -3,6 +3,7 @@ package service
 import (
   "context"
   "database/sql"
+  "strings"
   "time"
 
   "github.com/jackc/pgconn"
@@ -13,6 +14,7 @@ type PaymentCreateInput struct {
   BookingID int64
   UserID    int64
   Method    string
+  Amount    int64
 }
 
 type PaymentService struct {
@@ -39,13 +41,17 @@ func (s *PaymentService) Create(ctx context.Context, input PaymentCreateInput) (
     _ = tx.Rollback()
   }()
 
+  method := strings.ToUpper(strings.TrimSpace(input.Method))
+  if method != "CASH" && method != "TRANSFER" {
+    return 0, ErrInvalid
+  }
+
   var bookingUserID int64
   var bookingStatus string
-  var pricePerSlot int64
-  err = tx.QueryRowContext(ctx, `SELECT b.user_id, b.status, r.price_per_slot
+  var totalAmount int64
+  err = tx.QueryRowContext(ctx, `SELECT b.user_id, b.status, COALESCE(b.total_amount, 0)
      FROM bookings b
-     JOIN rooms r ON r.id = b.room_id
-     WHERE b.id=$1 FOR UPDATE`, input.BookingID).Scan(&bookingUserID, &bookingStatus, &pricePerSlot)
+     WHERE b.id=$1 FOR UPDATE`, input.BookingID).Scan(&bookingUserID, &bookingStatus, &totalAmount)
   if err == sql.ErrNoRows {
     return 0, ErrNotFound
   }
@@ -58,11 +64,18 @@ func (s *PaymentService) Create(ctx context.Context, input PaymentCreateInput) (
   if bookingStatus != "APPROVED" {
     return 0, ErrInvalid
   }
+  if totalAmount <= 0 {
+    return 0, ErrInvalid
+  }
+  if method == "TRANSFER" && input.Amount != totalAmount {
+    return 0, ErrAmountMismatch
+  }
 
   var paymentID int64
+  paidAt := time.Now()
   err = tx.QueryRowContext(ctx,
-    `INSERT INTO payments (booking_id, amount, method, status) VALUES ($1,$2,$3,'UNPAID') RETURNING id`,
-    input.BookingID, pricePerSlot, input.Method,
+    `INSERT INTO payments (booking_id, amount, method, status, paid_at) VALUES ($1,$2,$3,'PAID',$4) RETURNING id`,
+    input.BookingID, totalAmount, method, paidAt,
   ).Scan(&paymentID)
   if err != nil {
     if pgErr, ok := err.(*pgconn.PgError); ok && pgErr.Code == "23505" {
